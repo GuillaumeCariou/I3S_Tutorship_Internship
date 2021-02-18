@@ -1,7 +1,31 @@
+import time
+
 import cv2
 import numpy as np
 import copy
 import math
+
+################################ Settings ##########################################
+
+# Camera
+vid = cv2.VideoCapture(0)
+
+# Historique
+historique_size = 10
+
+# Canny
+sigma = 0.33
+
+# Hough Line
+minLineLength = 150
+maxLineGap = 50
+threshold_hough_line = 100
+
+# Angle
+max_diff_in_angle = 20
+
+
+################################ Settings ##########################################
 
 
 class Line:
@@ -37,48 +61,31 @@ class Line:
         return angleInDegrees
 
 
-################################ Settings ##########################################
+class Historique:
+    hist_size = 10
+    hist = []
+    hist_compteur = 0
 
-# Camera
-vid = cv2.VideoCapture(1)
+    def __init__(self, hist_size):
+        self.hist_size = hist_size
+        for i in range(self.hist_size):
+            self.hist.append(Line(0, 0, 0, 0))
 
-# Canny
-sigma = 0.33
+    def getHistoriqueValue(self):
+        x1m, y1m, x2m, y2m = 0, 0, 0, 0
+        for line in self.hist:
+            x1, y1, x2, y2 = line.returnValue()
+            x1m += x1
+            y1m += y1
+            x2m += x2
+            y2m += y2
 
-# Hough Line
-minLineLength = 150
-maxLineGap = 50
-threshold_hough_line = 100
+        x1m = int(x1m / len(self.hist))
+        y1m = int(y1m / len(self.hist))
+        x2m = int(x2m / len(self.hist))
+        y2m = int(y2m / len(self.hist))
 
-# Historique
-hist_size = 10
-hist = []
-hist_compteur = 0
-
-# Angle
-max_diff_in_angle = 20
-
-################################ Settings ##########################################
-
-for i in range(hist_size):
-    hist.append(Line(0, 0, 0, 0))
-
-
-def getHistoriqueValue(hist):
-    x1m, y1m, x2m, y2m = 0, 0, 0, 0
-    for line in hist:
-        x1, y1, x2, y2 = line.returnValue()
-        x1m += x1
-        y1m += y1
-        x2m += x2
-        y2m += y2
-
-    x1m = int(x1m / len(hist))
-    y1m = int(y1m / len(hist))
-    x2m = int(x2m / len(hist))
-    y2m = int(y2m / len(hist))
-
-    return x1m, y1m, x2m, y2m
+        return x1m, y1m, x2m, y2m
 
 
 def calculate_angle(x1, y1, x2, y2):
@@ -89,15 +96,16 @@ def calculate_angle(x1, y1, x2, y2):
 
 
 def is_between_max_diff_in_angle(line, hist):
-    x1, y1, x2, y2 = getHistoriqueValue(hist)
+    x1, y1, x2, y2 = hist.getHistoriqueValue()
     angle_hist = calculate_angle(x1, y1, x2, y2)
     if (angle_hist - max_diff_in_angle) <= line.angle() <= (angle_hist + max_diff_in_angle):
         return True
     return False
 
 
-while True:
+def line_detection(hist, ips):
     ret, original = vid.read()
+    # height, width, channels = original.shape
 
     # Gaussian Blur
     dst = cv2.GaussianBlur(original, (5, 5), cv2.BORDER_DEFAULT)
@@ -106,7 +114,6 @@ while True:
     gray = cv2.cvtColor(dst, cv2.COLOR_BGR2GRAY)
 
     # Canny
-
     v = np.median(gray)
     lower = int(max(0, (1.0 - sigma) * v))
     upper = int(min(255, (1.0 + sigma) * v))
@@ -149,12 +156,12 @@ while True:
 
         # Update Historique
         if is_between_max_diff_in_angle(line_mean, hist):
-            hist[hist_compteur].changeLineValue(x1m, y1m, x2m, y2m)
-            hist_compteur += 1
-            if hist_compteur >= hist_size:
-                hist_compteur = 0
+            hist.hist[hist.hist_compteur].changeLineValue(x1m, y1m, x2m, y2m)
+            hist.hist_compteur += 1
+            if hist.hist_compteur >= hist.hist_size:
+                hist.hist_compteur = 0
 
-        x1m, y1m, x2m, y2m = getHistoriqueValue(hist)
+        x1m, y1m, x2m, y2m = hist.getHistoriqueValue()
 
     # Make mean line
     img_line_plus_mean = copy.copy(img_line)
@@ -164,6 +171,10 @@ while True:
     angle = calculate_angle(x1m, y1m, x2m, y2m)
     cv2.putText(img_line_plus_mean, "Degres : " + str(round(angle, 2)), (30, 30), cv2.QT_FONT_NORMAL, 1, (0, 0, 255))
 
+    # Display IPS
+    if not ips == 0:
+        cv2.putText(img_line_plus_mean, "IPS : " + str(round(ips, 2)), (30, 60), cv2.QT_FONT_NORMAL, 1, (0, 0, 255))
+
     # Show Images
     cv2.imshow('line', original)
     cv2.imshow('line_gray', gray)
@@ -172,5 +183,36 @@ while True:
     cv2.imshow('Line process', img_line)
     cv2.imshow('Line process Plus Mean', img_line_plus_mean)
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+    return round(angle, 2)
+
+
+def caclulate_ips(ips, compteur, after):
+    current = time.time()
+    if current >= after:
+        after = time.time() + 1
+        ips = compteur
+        compteur = 0
+    else:
+        compteur += 1
+
+    return ips, compteur, after
+
+
+if __name__ == '__main__':
+    hist = Historique(hist_size=historique_size)
+    after = time.time() + 1
+    ips = 0
+    compteur = 0
+    while True:
+        # Calcule IPS
+        current = time.time()
+        if current >= after:
+            after = time.time() + 1
+            ips = compteur
+            compteur = 0
+        else:
+            compteur += 1
+
+        line_detection(hist, ips)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
