@@ -10,7 +10,7 @@ after = time.time() + 1
 if __name__ == '__main__':
     while True:
         ips, compteur, after = line.caclulate_ips(ips, compteur, after)
-        angle = line.line_detection(hist, 0)
+        angle = line.line_detection(hist, ips) # si ips == 0 alors les ips ne sont pas affiché
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
