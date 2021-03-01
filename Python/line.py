@@ -103,7 +103,7 @@ def is_between_max_diff_in_angle(line, hist):
     return False
 
 
-def line_detection(hist, ips):
+def line_detection(hist, ips, display_image):
     ret, original = vid.read()
     # height, width, channels = original.shape
 
@@ -169,19 +169,21 @@ def line_detection(hist, ips):
 
     # Calcule d'angle par rapport a l'axe x
     angle = calculate_angle(x1m, y1m, x2m, y2m)
-    cv2.putText(img_line_plus_mean, "Degres : " + str(round(angle, 2)), (30, 30), cv2.QT_FONT_NORMAL, 1, (0, 0, 255))
-
-    # Display IPS
-    if not ips == 0:
-        cv2.putText(img_line_plus_mean, "IPS : " + str(round(ips, 2)), (30, 60), cv2.QT_FONT_NORMAL, 1, (0, 0, 255))
 
     # Show Images
-    cv2.imshow('line', original)
-    cv2.imshow('line_gray', gray)
-    cv2.imshow('line_edge', edge)
-    cv2.imshow('Sobel Image', grad)
-    cv2.imshow('Line process', img_line)
-    cv2.imshow('Line process Plus Mean', img_line_plus_mean)
+    if display_image:
+        # Angle
+        cv2.putText(img_line_plus_mean, "Degres : " + str(round(angle, 2)), (30, 30), cv2.QT_FONT_NORMAL, 1,
+                    (0, 0, 255))
+        # Display IPS
+        if not ips == 0:
+            cv2.putText(img_line_plus_mean, "IPS : " + str(round(ips, 2)), (30, 60), cv2.QT_FONT_NORMAL, 1, (0, 0, 255))
+        cv2.imshow('line', original)
+        cv2.imshow('line_gray', gray)
+        cv2.imshow('line_edge', edge)
+        cv2.imshow('Sobel Image', grad)
+        cv2.imshow('Line process', img_line)
+        cv2.imshow('Line process Plus Mean', img_line_plus_mean)
 
     return round(angle, 2)
 
