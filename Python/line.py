@@ -103,7 +103,7 @@ def is_between_max_diff_in_angle(line, hist):
     return False
 
 
-def line_detection(hist, ips, display_image):
+def line_detection(hist, ips, display_image, display_mean):
     ret, original = vid.read()
     height, width, channels = original.shape
 
@@ -172,17 +172,19 @@ def line_detection(hist, ips, display_image):
 
     # Show Images
     if display_image:
+        cv2.imshow('line', original)
+        cv2.imshow('line_gray', gray)
+        cv2.imshow('line_edge', edge)
+        cv2.imshow('Sobel Image', grad)
+        cv2.imshow('Line process', img_line)
+
+    if display_mean:
         # Angle
         cv2.putText(img_line_plus_mean, "Degres : " + str(round(angle, 2)), (30, 30), cv2.QT_FONT_NORMAL, 1,
                     (0, 0, 255))
         # Display IPS
         if not ips == 0:
             cv2.putText(img_line_plus_mean, "IPS : " + str(round(ips, 2)), (30, 60), cv2.QT_FONT_NORMAL, 1, (0, 0, 255))
-        cv2.imshow('line', original)
-        cv2.imshow('line_gray', gray)
-        cv2.imshow('line_edge', edge)
-        cv2.imshow('Sobel Image', grad)
-        cv2.imshow('Line process', img_line)
         cv2.imshow('Line process Plus Mean', img_line_plus_mean)
 
     return round(angle, 2), height, width
