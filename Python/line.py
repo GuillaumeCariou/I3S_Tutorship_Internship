@@ -105,7 +105,7 @@ def is_between_max_diff_in_angle(line, hist):
 
 def line_detection(hist, ips, display_image):
     ret, original = vid.read()
-    # height, width, channels = original.shape
+    height, width, channels = original.shape
 
     # Gaussian Blur
     dst = cv2.GaussianBlur(original, (5, 5), cv2.BORDER_DEFAULT)
@@ -185,7 +185,7 @@ def line_detection(hist, ips, display_image):
         cv2.imshow('Line process', img_line)
         cv2.imshow('Line process Plus Mean', img_line_plus_mean)
 
-    return round(angle, 2)
+    return round(angle, 2), height, width
 
 
 def caclulate_ips(ips, compteur, after):
