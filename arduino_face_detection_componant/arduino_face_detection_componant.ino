@@ -5,13 +5,17 @@
 #define IN4 11
 #define ENA 6
 
-#define Right A2
-#define Left A1
-
-#define speed_forward 150
-
+String nom = "Arduino";
+String msg;
+int movement = 0;
+int speed_forward = 175;
+int speed_sideway = 255;
+int left = 0;
+int right = 0;
 
 void setup() {
+  Serial.begin(9600);
+
   pinMode(IN1, OUTPUT);
   pinMode(IN2, OUTPUT);
   pinMode(IN3, OUTPUT);
@@ -19,67 +23,88 @@ void setup() {
   pinMode(ENA, OUTPUT);
   pinMode(ENB, OUTPUT);
 
-  pinMode(Right, INPUT);
-  pinMode(Left, OUTPUT);
-}
-
-
-void left(){
-  digitalWrite(ENA, HIGH);
-  digitalWrite(ENB, HIGH);
-  digitalWrite(IN1, LOW);
-  digitalWrite(IN2, HIGH);
-  digitalWrite(IN3, LOW);
-  digitalWrite(IN4, HIGH); 
-  Serial.println("Left");
-}
-
-void right(){
-  digitalWrite(ENA, HIGH);
-  digitalWrite(ENB, HIGH);
-  digitalWrite(IN1, HIGH);
-  digitalWrite(IN2, LOW);
-  digitalWrite(IN3, HIGH);
-  digitalWrite(IN4, LOW);
-  Serial.println("Right");
-}
-
-void forward(){
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, HIGH);
-
-  analogWrite(ENB, speed_forward);
-  analogWrite(ENA, speed_forward);
 }
 
-int buttonState = 0;
-
 void loop() {
-  /*
-  if(digitalRead(Right) == HIGH ){
-    right();
-    delay(1000);
-  }else if(digitalRead(Left) == HIGH ){
-    left();
-    delay(1000);
-  }else{
-    forward();
-    delay(1000);
-  }
-  delay(5000);
-  */
-
-  buttonState = digitalRead(Right);
-
-  if (buttonState == HIGH) {
-    // turn LED on:
-    digitalWrite(Left, HIGH);
-  } else {
-    // turn LED off:
-    digitalWrite(Left, LOW);
-  }
-
+  movement = giveMovement();
   
+  if(movement == 8){//forward
+    digitalWrite(IN1, HIGH);
+    digitalWrite(IN2, LOW);
+    digitalWrite(IN3, LOW);
+    digitalWrite(IN4, HIGH);
+    left = speed_forward;
+    right = speed_forward;
+    Serial.println("forward");
+  }else if(movement == 2){//backward
+    digitalWrite(IN1, LOW);
+    digitalWrite(IN2, HIGH);
+    digitalWrite(IN3, HIGH);
+    digitalWrite(IN4, LOW);
+    left = speed_forward;
+    right = speed_forward;
+    Serial.println("backward");
+    
+  }else if(movement == 4){//left
+    digitalWrite(IN1, LOW);
+    digitalWrite(IN2, HIGH);
+    digitalWrite(IN3, LOW);
+    digitalWrite(IN4, HIGH); 
+    left = speed_sideway;
+    right = 0;
+    Serial.println("left");
+  }else if(movement == 6){//right
+    digitalWrite(IN1, HIGH);
+    digitalWrite(IN2, LOW);
+    digitalWrite(IN3, HIGH);
+    digitalWrite(IN4, LOW);
+    left = 0;
+    right = speed_sideway;
+    Serial.println("right");
+  }else if (movement == 5){//stop
+    left = 0;
+    right = 0;
+    Serial.println("Stop");
+  }
+
+  analogWrite(ENA, left);
+  analogWrite(ENB, right);  
+}
+
+
+
+
+// Serial Transmition Method
+int giveMovement(){
+  readSerialPort();
+  int nombre = 0;
+  if (msg != 0) {
+    nombre = msg.toInt();
+    sendData(nombre);
+  }
+  delay(500);
+
+  return nombre;
+}
+
+void readSerialPort() {
+  msg = "";
+  if (Serial.available()) {
+    delay(10);
+    while (Serial.available() > 0) {
+      msg += (char)Serial.read();
+    }
+    Serial.flush();
+  }
+}
+
+void sendData(int nombre) {
+  //write data
+  Serial.print(nom);
+  Serial.print(" received : ");
+  Serial.print(nombre);
 }

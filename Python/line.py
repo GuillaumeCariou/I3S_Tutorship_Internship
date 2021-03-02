@@ -7,9 +7,6 @@ import math
 
 ################################ Settings ##########################################
 
-# Camera
-vid = cv2.VideoCapture(0)
-
 # Historique
 historique_size = 10
 
@@ -103,12 +100,11 @@ def is_between_max_diff_in_angle(line, hist):
     return False
 
 
-def line_detection(hist, ips, display_image, display_mean):
-    ret, original = vid.read()
-    height, width, channels = original.shape
-
+def line_detection(hist, ips, display_image, display_mean, original_picture):
+    height, width, channels = original_picture.shape
+    size = (width, height)
     # Gaussian Blur
-    dst = cv2.GaussianBlur(original, (5, 5), cv2.BORDER_DEFAULT)
+    dst = cv2.GaussianBlur(original_picture, (5, 5), cv2.BORDER_DEFAULT)
 
     # Gray Scal
     gray = cv2.cvtColor(dst, cv2.COLOR_BGR2GRAY)
@@ -133,7 +129,7 @@ def line_detection(hist, ips, display_image, display_mean):
     grad = cv2.addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0)
 
     # HoughLines
-    img_line = copy.copy(original)
+    img_line = copy.copy(original_picture)
 
     x1m, y1m, x2m, y2m = 0, 0, 0, 0
     lines = cv2.HoughLinesP(grad, 1, np.pi / 180, threshold=threshold_hough_line, minLineLength=minLineLength,
@@ -172,7 +168,7 @@ def line_detection(hist, ips, display_image, display_mean):
 
     # Show Images
     if display_image:
-        cv2.imshow('line', original)
+        cv2.imshow('line', original_picture)
         cv2.imshow('line_gray', gray)
         cv2.imshow('line_edge', edge)
         cv2.imshow('Sobel Image', grad)
@@ -187,7 +183,7 @@ def line_detection(hist, ips, display_image, display_mean):
             cv2.putText(img_line_plus_mean, "IPS : " + str(round(ips, 2)), (30, 60), cv2.QT_FONT_NORMAL, 1, (0, 0, 255))
         cv2.imshow('Line process Plus Mean', img_line_plus_mean)
 
-    return round(angle, 2), height, width
+    return round(angle, 2), size, img_line_plus_mean
 
 
 def caclulate_ips(ips, compteur, after):
@@ -202,6 +198,66 @@ def caclulate_ips(ips, compteur, after):
     return ips, compteur, after
 
 
+def convert_input_into_video_with_line_detection(input_file_name, output_file_name):
+    hist = Historique(hist_size=historique_size)
+
+    vid = cv2.VideoCapture(input_file_name)
+    size = (0, 0)
+    img_array = []
+    frame_count = vid.get(cv2.CAP_PROP_FRAME_COUNT)
+
+    current_frame = 0
+    current_percentage = 0.0
+    avant = time.time()
+    print("==================Find line in image==================")
+    while vid.isOpened():
+        ret, frame = vid.read()
+
+
+        current_frame += 1
+        if int((current_frame / frame_count) * 100) == current_percentage + 1.0:
+            prediction = time.time() - avant
+            avant = time.time()
+            current_percentage += 1.0
+            to_print = str(int(current_percentage))
+            print("[" + " " * (3 - len(to_print)) + to_print + "%]   Predictions : " + str(round(prediction, 2)) + "s")
+
+        if frame is not None:
+            angle, size, img_line_plus_mean = line_detection(hist, 0, False, True, frame)
+            img_array.append(img_line_plus_mean)
+        else:
+            break
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    fps = vid.get(cv2.CAP_PROP_FPS)
+    out = cv2.VideoWriter(output_file_name + '.avi', cv2.VideoWriter_fourcc(*'XVID'), fps, size)
+
+    current_percentage = 0.0
+    avant = time.time()
+    print("==================Write Image to Disk==================")
+    for i in range(len(img_array)):
+
+
+        if int((i / frame_count) * 100) == current_percentage + 1.0:
+            prediction = time.time() - avant
+            avant = time.time()
+            current_percentage += 1.0
+            to_print = str(int(current_percentage))
+            print("[" + " " * (3 - len(to_print)) + to_print + "%]   Predictions : " + str(round(prediction, 2)) + "s")
+
+
+        out.write(img_array[i])
+        cv2.imshow('frame', img_array[i])
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    out.release()
+
+
+if __name__ == '__main__':
+    convert_input_into_video_with_line_detection('video_cable.avi','output')
+"""
 if __name__ == '__main__':
     hist = Historique(hist_size=historique_size)
     after = time.time() + 1
@@ -220,3 +276,4 @@ if __name__ == '__main__':
         line_detection(hist, ips)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+"""
