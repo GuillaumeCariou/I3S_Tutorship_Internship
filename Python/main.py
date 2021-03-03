@@ -101,12 +101,13 @@ if __name__ == '__main__':
 
 
                 # Reaction to angle
+                # ENA, ENB
                 if 90 > angle >= 0:  # need to turn right
-                    send_command(125, 175)
+                    send_command(200, 125)
                     commande = "right"
                 elif 180 > angle > 90:  # need to turn left
                     commande = "left"
-                    send_command(175, 125)
+                    send_command(125, 200)
                 else:
                     commande = "tout droit"
                     send_command(150, 150)
