@@ -34,7 +34,7 @@ def power_engine_from_angle(begin, end, angle):
 
     if power > 255:
         power = 255
-    return power
+    return int(power)
 
 
 def send_command(left, right):
