@@ -161,7 +161,7 @@ def line_detection(hist, ips, display_image, display_mean, original_picture):
         y2m = int(y2m / len(lines))
         line_mean = Line(x1m, y1m, x2m, y2m)
 
-        line_mean.put_line_forward()  # put line in the right way
+        # line_mean.put_line_forward()  # put line in the right way
 
         # Update Historique
         if (line_mean.length_of_the_line() >= minLineLength / 2):  # if (line_mean.length_of_the_line() >= minLineLength / 2):  #
