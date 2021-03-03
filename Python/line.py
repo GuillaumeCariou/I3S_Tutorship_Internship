@@ -103,9 +103,12 @@ def calculate_angle(x1, y1, x2, y2):
 
 def is_between_max_diff_in_angle(line, hist):
     x1, y1, x2, y2 = hist.getHistoriqueValue()
-    angle_mean = calculate_angle(x1, y1, x2, y2)
-    if ((abs(angle_mean) - max_diff_in_angle) <= abs(line.angle()) <= (abs(angle_mean) + max_diff_in_angle)) \
-            or ((abs(angle_mean) - max_diff_in_angle) >= abs(line.angle()) >= (abs(angle_mean) + max_diff_in_angle)):
+    angle_mean = abs(calculate_angle(x1, y1, x2, y2))
+    angle_line = abs(line.angle())
+
+    if ((angle_mean - max_diff_in_angle) <= angle_line <= (angle_mean + max_diff_in_angle)) and calculate_angle(x1, y1, x2, y2) >= 0 and line.angle() >= 0:
+        return True
+    elif ((angle_mean - max_diff_in_angle) <= angle_line <= (angle_mean + max_diff_in_angle)) and calculate_angle(x1, y1, x2, y2) <= 0 and line.angle() <= 0:
         return True
     return False
 
@@ -160,10 +163,10 @@ def line_detection(hist, ips, display_image, display_mean, original_picture):
         y2m = int(y2m / len(lines))
         line_mean = Line(x1m, y1m, x2m, y2m)
 
-        line_mean.put_line_forward() # put line in the right way
+        line_mean.put_line_forward()  # put line in the right way
 
         # Update Historique
-        if is_between_max_diff_in_angle(line_mean, hist) and (line_mean.length_of_the_line() >= minLineLength/2):
+        if is_between_max_diff_in_angle(line_mean, hist) and (line_mean.length_of_the_line() >= minLineLength / 2):
             hist.hist[hist.hist_compteur].changeLineValue(x1m, y1m, x2m, y2m)
             hist.hist_compteur += 1
             if hist.hist_compteur >= hist.hist_size:
@@ -225,7 +228,6 @@ def convert_input_into_video_with_line_detection(input_file_name, output_file_na
     while vid.isOpened():
         ret, frame = vid.read()
 
-
         current_frame += 1
         if int((current_frame / frame_count) * 100) == current_percentage + 1.0:
             prediction = time.time() - avant
@@ -250,14 +252,12 @@ def convert_input_into_video_with_line_detection(input_file_name, output_file_na
     print("==================Write Image to Disk==================")
     for i in range(len(img_array)):
 
-
         if int((i / frame_count) * 100) == current_percentage + 1.0:
             prediction = time.time() - avant
             avant = time.time()
             current_percentage += 1.0
             to_print = str(int(current_percentage))
             print("[" + " " * (3 - len(to_print)) + to_print + "%]   Predictions : " + str(round(prediction, 2)) + "s")
-
 
         out.write(img_array[i])
         cv2.imshow('frame', img_array[i])
@@ -268,7 +268,7 @@ def convert_input_into_video_with_line_detection(input_file_name, output_file_na
 
 
 if __name__ == '__main__':
-    convert_input_into_video_with_line_detection('video_cable.avi','output')
+    convert_input_into_video_with_line_detection('video_cable.avi', 'output')
 """
 if __name__ == '__main__':
     hist = Historique(hist_size=historique_size)
