@@ -42,7 +42,7 @@ def send_command(left, right):
     arduino.write(cmd.encode())
     time.sleep(0.1)  # wait for arduino to answer
 
-    arduino.flush()
+    arduino.flushOutput()
     """
     while arduino.inWaiting() == 0: pass
     if arduino.inWaiting() > 0:
