@@ -50,15 +50,14 @@ if __name__ == '__main__':
 
 def send_command(left, right):
     try:
-        while True:
-            cmd = str(left) + ',' + str(right) + ','
-            arduino.write(cmd.encode())
-            time.sleep(0.1)  # wait for arduino to answer
-            while arduino.inWaiting() == 0: pass
-            if arduino.inWaiting() > 0:
-                answer = arduino.readline()
-                print(answer)
-                arduino.flushInput()  # remove data after reading
+        cmd = str(left) + ',' + str(right) + ','
+        arduino.write(cmd.encode())
+        time.sleep(0.1)  # wait for arduino to answer
+        while arduino.inWaiting() == 0: pass
+        if arduino.inWaiting() > 0:
+            answer = arduino.readline()
+            print(answer)
+            arduino.flushInput()  # remove data after reading
     except KeyboardInterrupt:
         print("Send Command")
 
@@ -74,7 +73,7 @@ if __name__ == '__main__':
                 ret, original = vid.read()
                 ips, compteur, after = line.caclulate_ips(ips, compteur, after)
                 angle, size, img_line_plus_mean = line.line_detection(hist=angle_hist, ips=ips, display_image=False,
-                                                                      display_mean=False,
+                                                                      display_mean=True,
                                                                       original_picture=original)  # si ips == 0 alors les ips ne sont pas affiché
 
                 # print image size once
@@ -83,8 +82,8 @@ if __name__ == '__main__':
                     imprimer_taille_image = False
 
                 # stop the program by pressing q
-                # if cv2.waitKey(1) & 0xFF == ord('q'):
-                #    break
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
 
                 # Reaction to angle
                 if angle > 0:  # turn left
