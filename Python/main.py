@@ -106,9 +106,9 @@ if __name__ == '__main__':
                 # ENA, ENB
                 if 80 > angle >= 0:  # need to turn left
                     commande = "left"
-                    send_command(200, 0) # Le robot tourna a droite peu efficace
+                    send_command(140, 0) # Le robot tourna a droite peu efficace
                 elif 180 > angle > 100:  # need to turn right
-                    send_command(0, 200) # Le robot toune a gauche tres efficace
+                    send_command(0, 140) # Le robot toune a gauche tres efficace
                     commande = "right"
                 elif 100 >= angle >= 80:
                     commande = "tout droit"
