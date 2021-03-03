@@ -83,8 +83,8 @@ if __name__ == '__main__':
                     imprimer_taille_image = False
 
                 # stop the program by pressing q
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
+                # if cv2.waitKey(1) & 0xFF == ord('q'):
+                #    break
 
                 # Reaction to angle
                 if angle > 0:  # turn left
@@ -97,4 +97,4 @@ if __name__ == '__main__':
                     commande = "tout droit"
                     send_command(150, 150)
 
-                print("Commande = " + commande + "   Angle = " + angle)
+                print("Commande = " + commande + "   Angle = " + str(angle))
