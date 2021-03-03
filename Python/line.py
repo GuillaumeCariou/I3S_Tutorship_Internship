@@ -152,7 +152,7 @@ def line_detection(hist, ips, display_image, display_mean, original_picture):
         line_mean = Line(x1m, y1m, x2m, y2m)
 
         # Update Historique
-        if is_between_max_diff_in_angle(line_mean, hist):
+        if is_between_max_diff_in_angle(line_mean, hist) and line_mean.length_of_the_line() > minLineLength/2:
             hist.hist[hist.hist_compteur].changeLineValue(x1m, y1m, x2m, y2m)
             hist.hist_compteur += 1
             if hist.hist_compteur >= hist.hist_size:
