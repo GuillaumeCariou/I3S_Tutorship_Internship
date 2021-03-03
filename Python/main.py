@@ -5,12 +5,12 @@ import serial
 
 from gpiozero import LED
 
-# Elegoo
-speed_min = 100
-speed_max = 255
-
 # Camera
 vid = cv2.VideoCapture(0)
+
+# Elegoo
+power_forward = 100
+power_sideway = 140
 
 compteur = 0
 ips = 0
@@ -18,32 +18,16 @@ after = time.time() + 1
 
 imprimer_taille_image = True
 
-"""
-if __name__ == '__main__':
-    # Detection de ligne
-    while True:
-        ret, original = vid.read()
-        ips, compteur, after = line.caclulate_ips(ips, compteur, after)
-        angle, size, img_line_plus_mean = line.line_detection(hist=angle_hist, ips=ips, display_image=False,
-                                                              display_mean=True,
-                                                              original_picture=original)  # si ips == 0 alors les ips ne sont pas affiché
+left_begin = 0
+left_end = 85
+right_begin = 95
+right_end = 180
 
-        # print image size once
-        if imprimer_taille_image:
-            print(size)
-            imprimer_taille_image = False
 
-        # stop the program by pressing q
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-        # Reaction to angle
-        if angle > 0:  # turn left
-            print("right")
-        elif angle < 0:  # turn right
-            print("left")
-
-"""
+def power_engine_from_angle(begin, end, angle):
+    diff = end - begin
+    diff_angle_percentage = angle / diff
+    return 100 + ((power_sideway - 100) * diff_angle_percentage)
 
 
 def send_command(left, right):
@@ -100,19 +84,22 @@ if __name__ == '__main__':
                 if cv2.waitKey(1) & 0xFF == ord('q') & video:
                     break
 
+                power = 100
 
                 # Reaction to angle
                 # Les moteur sont inversé
                 # ENA, ENB
-                if 80 > angle >= 0:  # need to turn left
+                if left_end > angle >= left_begin:
                     commande = "left"
-                    send_command(140, 0) # Le robot tourna a droite peu efficace
-                elif 180 > angle > 100:  # need to turn right
-                    send_command(0, 140) # Le robot toune a gauche tres efficace
+                    power = power_engine_from_angle(left_begin, left_end, angle)
+                    send_command(power, 0)  # Le robot tourna a droite peu efficace
+                elif right_end >= angle > right_begin:
                     commande = "right"
-                elif 100 >= angle >= 80:
+                    power = power_engine_from_angle(right_begin, right_end, angle)
+                    send_command(0, power)  # Le robot toune a gauche tres efficace
+                elif right_begin >= angle >= left_end:
                     commande = "tout droit"
                     send_command(100, 100)
 
                 if suivi:
-                    print("Commande = " + commande + "   Angle = " + str(angle))
+                    print("Commande = " + commande + "   Angle = " + str(angle) + "   Power_engine = " + str(power))
