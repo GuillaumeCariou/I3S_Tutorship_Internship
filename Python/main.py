@@ -72,6 +72,13 @@ if __name__ == '__main__':
             video = True
         else:
             video = False
+
+        suivi = input("Voulez vous le suivi de commande ? Y or N ")
+        if suivi == "Y":
+            suivi = True
+        else:
+            suivi = False
+
         if arduino.isOpen():
             print("{} connected!".format(arduino.port))
 
@@ -94,14 +101,15 @@ if __name__ == '__main__':
 
 
                 # Reaction to angle
-                if 90 >= angle >= 0:  # turn left
+                if 90 > angle >= 0:  # need to turn right
                     send_command(125, 175)
                     commande = "right"
-                elif -90 < angle < 0:  # turn right
+                elif 180 > angle > 90:  # need to turn left
                     commande = "left"
                     send_command(175, 125)
                 else:
                     commande = "tout droit"
                     send_command(150, 150)
 
-                print("Commande = " + commande + "   Angle = " + str(angle))
+                if suivi:
+                    print("Commande = " + commande + "   Angle = " + str(angle))
