@@ -93,4 +93,7 @@ if __name__ == '__main__':
                 elif angle < 0:  # turn right
                     print("left")
                     send_command(100, 150)
+                else:
+                    print("tout droit")
+                    send_command(150,150)
 
