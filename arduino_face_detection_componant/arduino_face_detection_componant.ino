@@ -32,46 +32,6 @@ void setup() {
 void loop() {
   movement = giveMovement();
 
-  /*
-  if(movement == 8){//forward
-    digitalWrite(IN1, HIGH);
-    digitalWrite(IN2, LOW);
-    digitalWrite(IN3, LOW);
-    digitalWrite(IN4, HIGH);
-    left = speed_forward;
-    right = speed_forward;
-    Serial.println("forward");
-  }else if(movement == 2){//backward
-    digitalWrite(IN1, LOW);
-    digitalWrite(IN2, HIGH);
-    digitalWrite(IN3, HIGH);
-    digitalWrite(IN4, LOW);
-    left = speed_forward;
-    right = speed_forward;
-    Serial.println("backward");
-    
-  }else if(movement == 4){//left
-    digitalWrite(IN1, LOW);
-    digitalWrite(IN2, HIGH);
-    digitalWrite(IN3, LOW);
-    digitalWrite(IN4, HIGH); 
-    left = speed_sideway;
-    right = 0;
-    Serial.println("left");
-  }else if(movement == 6){//right
-    digitalWrite(IN1, HIGH);
-    digitalWrite(IN2, LOW);
-    digitalWrite(IN3, HIGH);
-    digitalWrite(IN4, LOW);
-    left = 0;
-    right = speed_sideway;
-    Serial.println("right");
-  }else if (movement == 5){//stop
-    left = 0;
-    right = 0;
-    Serial.println("Stop");
-  }*/
-
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
   digitalWrite(IN3, LOW);
@@ -136,3 +96,47 @@ void sendData(Movement mov) {
   Serial.print(mov.right);
   Serial.print("\n\n");
 }
+
+
+
+
+
+ /*
+  if(movement == 8){//forward
+    digitalWrite(IN1, HIGH);
+    digitalWrite(IN2, LOW);
+    digitalWrite(IN3, LOW);
+    digitalWrite(IN4, HIGH);
+    left = speed_forward;
+    right = speed_forward;
+    Serial.println("forward");
+  }else if(movement == 2){//backward
+    digitalWrite(IN1, LOW);
+    digitalWrite(IN2, HIGH);
+    digitalWrite(IN3, HIGH);
+    digitalWrite(IN4, LOW);
+    left = speed_forward;
+    right = speed_forward;
+    Serial.println("backward");
+    
+  }else if(movement == 4){//left
+    digitalWrite(IN1, LOW);
+    digitalWrite(IN2, HIGH);
+    digitalWrite(IN3, LOW);
+    digitalWrite(IN4, HIGH); 
+    left = speed_sideway;
+    right = 0;
+    Serial.println("left");
+  }else if(movement == 6){//right
+    digitalWrite(IN1, HIGH);
+    digitalWrite(IN2, LOW);
+    digitalWrite(IN3, HIGH);
+    digitalWrite(IN4, LOW);
+    left = 0;
+    right = speed_sideway;
+    Serial.println("right");
+  }else if (movement == 5){//stop
+    left = 0;
+    right = 0;
+    Serial.println("Stop");
+  }*/

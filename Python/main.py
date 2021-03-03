@@ -74,7 +74,7 @@ if __name__ == '__main__':
                 ret, original = vid.read()
                 ips, compteur, after = line.caclulate_ips(ips, compteur, after)
                 angle, size, img_line_plus_mean = line.line_detection(hist=angle_hist, ips=ips, display_image=False,
-                                                                      display_mean=True,
+                                                                      display_mean=False,
                                                                       original_picture=original)  # si ips == 0 alors les ips ne sont pas affiché
 
                 # print image size once
@@ -89,10 +89,12 @@ if __name__ == '__main__':
                 # Reaction to angle
                 if angle > 0:  # turn left
                     send_command(150, 100)
-                    print("right")
+                    commande = "right"
                 elif angle < 0:  # turn right
-                    print("left")
+                    commande = "left"
                     send_command(100, 150)
                 else:
-                    print("tout droit")
+                    commande = "tout droit"
                     send_command(150, 150)
+
+                print("Commande = " + commande + "   Angle = " + angle)
