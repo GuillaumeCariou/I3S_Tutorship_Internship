@@ -41,8 +41,8 @@ def send_command(left, right):
     cmd = str(left) + ',' + str(right) + ','
     arduino.write(cmd.encode())
     time.sleep(0.1)  # wait for arduino to answer
-    arduino.flushInput()
-    arduino.flushOutput()
+
+    arduino.flush()
     """
     while arduino.inWaiting() == 0: pass
     if arduino.inWaiting() > 0:
