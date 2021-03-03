@@ -94,8 +94,8 @@ def calculate_angle(x1, y1, x2, y2):
 
 def is_between_max_diff_in_angle(line, hist):
     x1, y1, x2, y2 = hist.getHistoriqueValue()
-    angle_hist = calculate_angle(x1, y1, x2, y2)
-    if (angle_hist - max_diff_in_angle) <= line.angle() <= (angle_hist + max_diff_in_angle):
+    angle = calculate_angle(x1, y1, x2, y2)
+    if (angle - max_diff_in_angle) <= line.angle() <= (angle + max_diff_in_angle):
         return True
     return False
 
