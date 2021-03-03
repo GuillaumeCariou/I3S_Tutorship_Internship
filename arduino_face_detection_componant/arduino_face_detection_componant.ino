@@ -5,13 +5,18 @@
 #define IN4 11
 #define ENA 6
 
-String nom = "Arduino";
-String msg;
-int movement = 0;
+struct Movement{
+  int left;
+  int right;
+  int Just_send;
+};
+
+String nom = "Arduino_Elegoo";
+Movement movement = {0,0,0};
+Movement mov = {0,0,0};
+
 int speed_forward = 175;
 int speed_sideway = 255;
-int left = 0;
-int right = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -22,16 +27,12 @@ void setup() {
   pinMode(IN4, OUTPUT);
   pinMode(ENA, OUTPUT);
   pinMode(ENB, OUTPUT);
-
-  digitalWrite(IN1, HIGH);
-  digitalWrite(IN2, LOW);
-  digitalWrite(IN3, LOW);
-  digitalWrite(IN4, HIGH);
 }
 
 void loop() {
   movement = giveMovement();
-  
+
+  /*
   if(movement == 8){//forward
     digitalWrite(IN1, HIGH);
     digitalWrite(IN2, LOW);
@@ -69,42 +70,69 @@ void loop() {
     left = 0;
     right = 0;
     Serial.println("Stop");
-  }
+  }*/
 
-  analogWrite(ENA, left);
-  analogWrite(ENB, right);  
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+  
+  analogWrite(ENA, mov.left);
+  analogWrite(ENB, mov.right);  
 }
 
 
 
 
 // Serial Transmition Method
-int giveMovement(){
+Movement giveMovement(){
   readSerialPort();
-  int nombre = 0;
-  if (msg != 0) {
-    nombre = msg.toInt();
-    sendData(nombre);
+  if (mov.Just_send != 0) {
+    //mov = msg.toInt();
+    sendData(mov);
   }
   delay(500);
 
-  return nombre;
+  return mov;
 }
 
-void readSerialPort() {
-  msg = "";
+Movement readSerialPort() {
+  mov = {movement.left,movement.right,0};
+  String msg;
+  String strArr[2];
   if (Serial.available()) {
     delay(10);
     while (Serial.available() > 0) {
       msg += (char)Serial.read();
     }
+    
     Serial.flush();
+
+    int stringStart = 0;
+    int arrayIndex = 0;
+    
+    for (int i=0; i < msg.length(); i++){
+      if(msg.charAt(i) == ','){
+        strArr[arrayIndex] = "";
+        strArr[arrayIndex] = msg.substring(stringStart, i);
+        stringStart = (i+1);
+        arrayIndex++;
+      }
+    }
+    mov.left = strArr[0].toInt();
+    mov.right = strArr[1].toInt();
+    mov.Just_send = 1;
   }
+  
+  return mov;
 }
 
-void sendData(int nombre) {
+void sendData(Movement mov) {
   //write data
   Serial.print(nom);
-  Serial.print(" received : ");
-  Serial.print(nombre);
+  Serial.print(" received left: ");
+  Serial.print(mov.left);
+  Serial.print(" received right: ");
+  Serial.print(mov.right);
+  Serial.print("\n\n");
 }
