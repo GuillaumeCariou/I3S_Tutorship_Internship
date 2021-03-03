@@ -92,11 +92,13 @@ if __name__ == '__main__':
                 if cv2.waitKey(1) & 0xFF == ord('q') & video:
                     break
 
+                angle = abs(angle) + 90
+
                 # Reaction to angle
-                if angle > 0:  # turn left
+                if angle > 90:  # turn left
                     send_command(125, 175)
                     commande = "right"
-                elif angle < 0:  # turn right
+                elif angle < 90:  # turn right
                     commande = "left"
                     send_command(175, 125)
                 else:
