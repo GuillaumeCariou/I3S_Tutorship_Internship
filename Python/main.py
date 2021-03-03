@@ -10,7 +10,8 @@ vid = cv2.VideoCapture(0)
 
 # Elegoo
 power_forward = 100
-power_sideway = 140
+power_sideway_minimal = 130
+power_sideway_maximal = 200
 
 compteur = 0
 ips = 0
@@ -27,7 +28,7 @@ right_end = 180
 def power_engine_from_angle(begin, end, angle):
     diff = end - begin
     diff_angle_percentage = angle / diff
-    return 100 + ((power_sideway - 100) * diff_angle_percentage)
+    return power_sideway_minimal + ((power_sideway_maximal - power_sideway_minimal) * diff_angle_percentage)
 
 
 def send_command(left, right):
@@ -71,9 +72,12 @@ if __name__ == '__main__':
             while True:
                 ret, original = vid.read()
                 ips, compteur, after = line.caclulate_ips(ips, compteur, after)
-                angle, size, img_line_plus_mean = line.line_detection(hist=angle_hist, ips=ips, display_image=False,
-                                                                      display_mean=video,
-                                                                      original_picture=original)  # si ips == 0 alors les ips ne sont pas affiché
+
+                # si ips == 0 alors les ips ne sont pas affiché
+                angle, size, img_line_plus_mean, did_not_find_lines = line.line_detection(hist=angle_hist, ips=ips,
+                                                                                          display_image=False,
+                                                                                          display_mean=video,
+                                                                                          original_picture=original)
 
                 # print image size once
                 if imprimer_taille_image:
@@ -89,7 +93,10 @@ if __name__ == '__main__':
                 # Reaction to angle
                 # Les moteur sont inversé
                 # ENA, ENB
-                if left_end > angle >= left_begin:
+                if did_not_find_lines:
+                    commande = "Backward"
+                    send_command(10,10)
+                elif left_end > angle >= left_begin:
                     commande = "left"
                     power = power_engine_from_angle(left_begin, left_end, angle)
                     send_command(power, 0)  # Le robot tourna a droite peu efficace
@@ -98,7 +105,7 @@ if __name__ == '__main__':
                     power = power_engine_from_angle(right_begin, right_end, angle)
                     send_command(0, power)  # Le robot toune a gauche tres efficace
                 elif right_begin >= angle >= left_end:
-                    commande = "tout droit"
+                    commande = "Forward"
                     send_command(100, 100)
 
                 if suivi:

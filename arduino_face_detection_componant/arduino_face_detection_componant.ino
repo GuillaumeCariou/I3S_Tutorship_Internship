@@ -32,13 +32,21 @@ void setup() {
 void loop() {
   movement = giveMovement();
 
-  digitalWrite(IN1, HIGH);
-  digitalWrite(IN2, LOW);
-  digitalWrite(IN3, LOW);
-  digitalWrite(IN4, HIGH);
-  
-  analogWrite(ENA, mov.left);
-  analogWrite(ENB, mov.right);  
+  if(movement.left == 10 && movement.right == 10){//go backward
+    digitalWrite(IN1, LOW);
+    digitalWrite(IN2, HIGH);
+    digitalWrite(IN3, HIGH);
+    digitalWrite(IN4, LOW);
+    analogWrite(ENA, 100);
+    analogWrite(ENB, 100); 
+  }else{                                         //go Forward
+    digitalWrite(IN1, HIGH);
+    digitalWrite(IN2, LOW);
+    digitalWrite(IN3, LOW);
+    digitalWrite(IN4, HIGH);
+    analogWrite(ENA, movement.left);
+    analogWrite(ENB, movement.right); 
+  }  
 }
 
 
@@ -47,11 +55,10 @@ void loop() {
 // Serial Transmition Method
 Movement giveMovement(){
   readSerialPort();
-  if (mov.Just_send != 0) {
+  //if (mov.Just_send != 0) {
     //mov = msg.toInt();
-    sendData(mov);
-  }
-  delay(500);
+    //sendData(mov);
+  //}
 
   return mov;
 }

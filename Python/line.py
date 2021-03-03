@@ -111,6 +111,8 @@ def is_between_max_diff_in_angle(line, hist):
 
 
 def line_detection(hist, ips, display_image, display_mean, original_picture):
+    did_not_find_lines = False
+
     height, width, channels = original_picture.shape
     size = (width, height)
     # Gaussian Blur
@@ -168,6 +170,8 @@ def line_detection(hist, ips, display_image, display_mean, original_picture):
         # Update Historique
         if line_mean.length_of_the_line() >= minLineLength / 2:  # if (line_mean.length_of_the_line() >= minLineLength / 2):  #
             hist.add_line(line_mean)
+    else:
+        did_not_find_lines = True
 
     x1m, y1m, x2m, y2m, line_hist = hist.getHistoriqueValue()
 
@@ -195,7 +199,7 @@ def line_detection(hist, ips, display_image, display_mean, original_picture):
             cv2.putText(img_line_plus_mean, "IPS : " + str(round(ips, 2)), (30, 60), cv2.QT_FONT_NORMAL, 1, (0, 0, 255))
         cv2.imshow('Line process Plus Mean', img_line_plus_mean)
 
-    return round(angle, 2), size, img_line_plus_mean
+    return round(angle, 2), size, img_line_plus_mean, did_not_find_lines
 
 
 def caclulate_ips(ips, compteur, after):
