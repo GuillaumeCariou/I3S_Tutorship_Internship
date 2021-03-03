@@ -5,8 +5,6 @@ import serial
 
 from gpiozero import LED
 
-angle_hist = line.Historique(hist_size=10)
-
 # Elegoo
 speed_min = 100
 speed_max = 255
@@ -78,6 +76,9 @@ if __name__ == '__main__':
             suivi = True
         else:
             suivi = False
+
+        hist_size = input("Quelle taille d'historique voulez vous ?  > 0")
+        angle_hist = line.Historique(hist_size=int(hist_size))
 
         if arduino.isOpen():
             print("{} connected!".format(arduino.port))
