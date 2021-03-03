@@ -148,6 +148,9 @@ def line_detection(hist, ips, display_image, display_mean, original_picture):
         x1m, y1m, x2m, y2m = 0, 0, 0, 0
         for line in lines:
             x1, y1, x2, y2 = line[0]
+            current_line = Line(x1, y1, x2, y2)
+            current_line.put_line_forward()
+            x1, y1, x2, y2 = current_line.returnValue()
             x1m += x1
             y1m += y1
             x2m += x2
