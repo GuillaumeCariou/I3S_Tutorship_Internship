@@ -46,10 +46,12 @@ if __name__ == '__main__':
             print("left")
 
 """
+
+
 def send_command(left, right):
     try:
         while True:
-            cmd = left + ',' + right + ','
+            cmd = str(left) + ',' + str(right) + ','
             arduino.write(cmd.encode())
             time.sleep(0.1)  # wait for arduino to answer
             while arduino.inWaiting() == 0: pass
@@ -59,8 +61,6 @@ def send_command(left, right):
                 arduino.flushInput()  # remove data after reading
     except KeyboardInterrupt:
         print("KeyboardInterrupt has been caught.")
-
-
 
 
 if __name__ == '__main__':
@@ -88,12 +88,11 @@ if __name__ == '__main__':
 
                 # Reaction to angle
                 if angle > 0:  # turn left
-                    send_command(150,100)
+                    send_command(150, 100)
                     print("right")
                 elif angle < 0:  # turn right
                     print("left")
                     send_command(100, 150)
                 else:
                     print("tout droit")
-                    send_command(150,150)
-
+                    send_command(150, 150)
