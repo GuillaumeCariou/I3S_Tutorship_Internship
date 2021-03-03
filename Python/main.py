@@ -24,11 +24,17 @@ left_end = 85
 right_begin = 95
 right_end = 180
 
+compteur_did_not_find_lines = 0
+
 
 def power_engine_from_angle(begin, end, angle):
     diff = end - begin
     diff_angle_percentage = angle / diff
-    return power_sideway_minimal + ((power_sideway_maximal - power_sideway_minimal) * diff_angle_percentage)
+    power = power_sideway_minimal + ((power_sideway_maximal - power_sideway_minimal) * diff_angle_percentage)
+
+    if power > 255:
+        power = 255
+    return power
 
 
 def send_command(left, right):
@@ -88,14 +94,17 @@ if __name__ == '__main__':
                 if cv2.waitKey(1) & 0xFF == ord('q') & video:
                     break
 
-                power = 100
+                if did_not_find_lines:
+                    compteur_did_not_find_lines += 1
 
                 # Reaction to angle
                 # Les moteur sont inversé
                 # ENA, ENB
-                if did_not_find_lines:
+                if did_not_find_lines and compteur_did_not_find_lines > 10:
                     commande = "Backward"
-                    send_command(10,10)
+                    send_command(10, 10)  # ceci est un code
+                    power = power_forward
+                    compteur_did_not_find_lines = 0
                 elif left_end > angle >= left_begin:
                     commande = "left"
                     power = power_engine_from_angle(left_begin, left_end, angle)
@@ -106,7 +115,8 @@ if __name__ == '__main__':
                     send_command(0, power)  # Le robot toune a gauche tres efficace
                 elif right_begin >= angle >= left_end:
                     commande = "Forward"
-                    send_command(100, 100)
+                    send_command(power_forward, power_forward)
+                    power = power_forward
 
                 if suivi:
                     print("Commande = " + commande + "   Angle = " + str(angle) + "   Power_engine = " + str(power))
