@@ -77,6 +77,12 @@ class Historique:
         for i in range(self.hist_size):
             self.hist.append(Line(320, 0, 320, 480))
 
+    def add_line(self, line):
+        self.hist[self.hist_compteur].changeLineValue(line.x1, line.y1, line.x2, line.y2)
+        self.hist_compteur += 1
+        if self.hist_compteur >= self.hist_size:
+            self.hist_compteur = 0
+
     def getHistoriqueValue(self):
         x1m, y1m, x2m, y2m = 0, 0, 0, 0
         for line in self.hist:
@@ -91,19 +97,12 @@ class Historique:
         x2m = int(x2m / len(self.hist))
         y2m = int(y2m / len(self.hist))
 
-        return x1m, y1m, x2m, y2m
-
-
-def calculate_angle(x1, y1, x2, y2):
-    deltaY = y2 - y1
-    deltaX = x2 - x1
-    angleInDegrees = math.atan2(deltaY, deltaX) * 180 / np.pi
-    return angleInDegrees
+        return x1m, y1m, x2m, y2m, Line(x1m, y1m, x2m, y2m)
 
 
 def is_between_max_diff_in_angle(line, hist):
-    x1, y1, x2, y2 = hist.getHistoriqueValue()
-    angle_mean = abs(calculate_angle(x1, y1, x2, y2))
+    x1, y1, x2, y2, line = hist.getHistoriqueValue()
+    angle_mean = abs(line.angle)
     angle_line = abs(line.angle())
 
     if (angle_mean - max_diff_in_angle) <= angle_line <= (angle_mean + max_diff_in_angle):
@@ -142,11 +141,11 @@ def line_detection(hist, ips, display_image, display_mean, original_picture):
     # HoughLines
     img_line = copy.copy(original_picture)
 
-    x1m, y1m, x2m, y2m = 0, 0, 0, 0
     lines = cv2.HoughLinesP(grad, 1, np.pi / 180, threshold=threshold_hough_line, minLineLength=minLineLength,
                             maxLineGap=maxLineGap)
 
     if lines is not None:
+        x1m, y1m, x2m, y2m = 0, 0, 0, 0
         for line in lines:
             x1, y1, x2, y2 = line[0]
             x1m += x1
@@ -164,21 +163,17 @@ def line_detection(hist, ips, display_image, display_mean, original_picture):
         # line_mean.put_line_forward()  # put line in the right way
 
         # Update Historique
-        if (line_mean.length_of_the_line() >= minLineLength / 2):  # if (line_mean.length_of_the_line() >= minLineLength / 2):  #
+        if line_mean.length_of_the_line() >= minLineLength / 2:  # if (line_mean.length_of_the_line() >= minLineLength / 2):  #
+            hist.add_line(line_mean)
 
-            hist.hist[hist.hist_compteur].changeLineValue(x1m, y1m, x2m, y2m)
-            hist.hist_compteur += 1
-            if hist.hist_compteur >= hist.hist_size:
-                hist.hist_compteur = 0
-
-        x1m, y1m, x2m, y2m = hist.getHistoriqueValue()
+    x1m, y1m, x2m, y2m, line_hist = hist.getHistoriqueValue()
 
     # Make mean line
     img_line_plus_mean = copy.copy(img_line)
     cv2.line(img_line_plus_mean, (x1m, y1m), (x2m, y2m), (0, 0, 255), 3)
 
     # Calcule d'angle par rapport a l'axe x
-    angle = calculate_angle(x1m, y1m, x2m, y2m)
+    angle = line_hist.angle()
 
     # Show Images
     if display_image:
