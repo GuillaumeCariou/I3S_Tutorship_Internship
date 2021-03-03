@@ -106,9 +106,7 @@ def is_between_max_diff_in_angle(line, hist):
     angle_mean = abs(calculate_angle(x1, y1, x2, y2))
     angle_line = abs(line.angle())
 
-    if ((angle_mean - max_diff_in_angle) <= angle_line <= (angle_mean + max_diff_in_angle)) and calculate_angle(x1, y1, x2, y2) >= 0 and line.angle() >= 0:
-        return True
-    elif ((angle_mean - max_diff_in_angle) <= angle_line <= (angle_mean + max_diff_in_angle)) and calculate_angle(x1, y1, x2, y2) <= 0 and line.angle() <= 0:
+    if (angle_mean - max_diff_in_angle) <= angle_line <= (angle_mean + max_diff_in_angle):
         return True
     return False
 
@@ -166,7 +164,8 @@ def line_detection(hist, ips, display_image, display_mean, original_picture):
         line_mean.put_line_forward()  # put line in the right way
 
         # Update Historique
-        if is_between_max_diff_in_angle(line_mean, hist) and (line_mean.length_of_the_line() >= minLineLength / 2):
+        if (line_mean.length_of_the_line() >= minLineLength / 2):  # if (line_mean.length_of_the_line() >= minLineLength / 2):  #
+
             hist.hist[hist.hist_compteur].changeLineValue(x1m, y1m, x2m, y2m)
             hist.hist_compteur += 1
             if hist.hist_compteur >= hist.hist_size:
