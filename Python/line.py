@@ -19,7 +19,7 @@ maxLineGap = 50
 threshold_hough_line = 100
 
 # Angle
-max_diff_in_angle = 20
+max_diff_in_angle = 180
 
 
 ################################ Settings ##########################################

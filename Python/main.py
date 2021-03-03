@@ -39,9 +39,11 @@ if __name__ == '__main__':
                 # stop the program by pressing q
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
-
+                sum = 0
                 # Reaction to angle
                 if angle > 90:  # turn left
-                    print("left")
+                    sum += 1
+                    # print("left")
                 elif angle < 90:  # turn right
-                    print("rights")
+                    sum += 1
+                    # print("rights")
