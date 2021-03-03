@@ -92,11 +92,11 @@ if __name__ == '__main__':
 
                 # Reaction to angle
                 if angle > 0:  # turn left
-                    send_command(150, 100)
+                    send_command(125, 175)
                     commande = "right"
                 elif angle < 0:  # turn right
                     commande = "left"
-                    send_command(100, 150)
+                    send_command(175, 125)
                 else:
                     commande = "tout droit"
                     send_command(150, 150)
