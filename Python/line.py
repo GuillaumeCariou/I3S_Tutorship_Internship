@@ -57,6 +57,15 @@ class Line:
         angleInDegrees = math.atan2(deltaY, deltaX) * 180 / np.pi
         return angleInDegrees
 
+    def put_line_forward(self):
+        if self.y1 > self.y2:
+            buffx = self.x1
+            buffy = self.y1
+            self.x1 = self.x2
+            self.y1 = self.y2
+            self.x2 = buffx
+            self.y2 = buffy
+
 
 class Historique:
     hist_size = 10
@@ -151,8 +160,10 @@ def line_detection(hist, ips, display_image, display_mean, original_picture):
         y2m = int(y2m / len(lines))
         line_mean = Line(x1m, y1m, x2m, y2m)
 
+        line_mean.put_line_forward() # put line in the right way
+
         # Update Historique
-        if is_between_max_diff_in_angle(line_mean, hist) and line_mean.length_of_the_line() > minLineLength/2:
+        if is_between_max_diff_in_angle(line_mean, hist) and (line_mean.length_of_the_line() >= minLineLength/2):
             hist.hist[hist.hist_compteur].changeLineValue(x1m, y1m, x2m, y2m)
             hist.hist_compteur += 1
             if hist.hist_compteur >= hist.hist_size:
