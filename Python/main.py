@@ -101,16 +101,17 @@ if __name__ == '__main__':
 
 
                 # Reaction to angle
+                # Les moteur sont inversé
                 # ENA, ENB
                 if 80 > angle >= 0:  # need to turn left
                     commande = "left"
-                    send_command(50, 200)
+                    send_command(200, 0) # Le robot tourna a droite peu efficace
                 elif 180 > angle > 100:  # need to turn right
-                    send_command(200, 50)
+                    send_command(0, 200) # Le robot toune a gauche tres efficace
                     commande = "right"
                 elif 100 >= angle >= 80:
                     commande = "tout droit"
-                    send_command(150, 150)
+                    send_command(100, 100)
 
                 if suivi:
                     print("Commande = " + commande + "   Angle = " + str(angle))
