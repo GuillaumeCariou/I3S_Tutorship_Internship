@@ -19,7 +19,7 @@ maxLineGap = 50
 threshold_hough_line = 100
 
 # Angle
-max_diff_in_angle = 90
+max_diff_in_angle = 30
 
 
 ################################ Settings ##########################################
@@ -66,7 +66,7 @@ class Historique:
     def __init__(self, hist_size):
         self.hist_size = hist_size
         for i in range(self.hist_size):
-            self.hist.append(Line(0, 0, 0, 0))
+            self.hist.append(Line(320, 0, 320, 480))
 
     def getHistoriqueValue(self):
         x1m, y1m, x2m, y2m = 0, 0, 0, 0
