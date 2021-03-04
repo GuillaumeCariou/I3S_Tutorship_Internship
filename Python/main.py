@@ -3,8 +3,6 @@ import cv2
 import time
 import serial
 
-from gpiozero import LED
-
 # Camera
 vid = cv2.VideoCapture(0)
 
