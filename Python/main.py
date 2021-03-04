@@ -38,11 +38,14 @@ def power_engine_from_angle(begin, end, angle):
 
 
 def send_command(left, right):
-    cmd = str(left) + ',' + str(right) + ','
-    arduino.write(cmd.encode())
-    time.sleep(0.1)  # wait for arduino to answer
+    try:
+        cmd = str(left) + ',' + str(right) + ','
+        arduino.write(cmd.encode())
+        time.sleep(0.1)  # wait for arduino to answer
 
-    arduino.flushOutput()
+        arduino.flushOutput()
+    except Exception as ex:
+        print(ex)
     """
     while arduino.inWaiting() == 0: pass
     if arduino.inWaiting() > 0:
