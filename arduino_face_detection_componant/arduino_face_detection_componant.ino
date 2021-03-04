@@ -55,10 +55,9 @@ void loop() {
 // Serial Transmition Method
 Movement giveMovement(){
   readSerialPort();
-  //if (mov.Just_send != 0) {
-    //mov = msg.toInt();
-    //sendData(mov);
-  //}
+  if (mov.Just_send != 0) {
+    sendData(mov);
+  }
 
   return mov;
 }
@@ -102,6 +101,7 @@ void sendData(Movement mov) {
   Serial.print(" received right: ");
   Serial.print(mov.right);
   Serial.print("\n\n");
+  Serial.flush();
 }
 
 

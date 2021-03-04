@@ -44,6 +44,7 @@ def send_command(left, right):
         time.sleep(0.1)  # wait for arduino to answer
 
         arduino.flushOutput()
+        arduino.flushInput()
     except Exception as ex:
         print(ex)
     """
