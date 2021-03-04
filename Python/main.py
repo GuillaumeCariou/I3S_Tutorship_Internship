@@ -123,4 +123,4 @@ if __name__ == '__main__':
                     power = power_forward
 
                 if suivi:
-                    print("Commande = " + commande + "   Angle = " + str(angle) + "   Power_engine = " + str(power))
+                    print("Commande = " + commande + " " * (10-len(commande)) + "   Angle = " + str(angle) + " " * (10-len(str(angle))) + "   Power_engine = " + str(power))
