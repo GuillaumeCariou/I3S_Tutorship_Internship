@@ -62,8 +62,7 @@ def main():
     tracker.set_max_size(args.max_size)
 
     # Generate a graphical representation of the events and the tracking results
-    frame_generator = mvd_analytics.TrackingFrameGenerator(
-        prod_cd, tracker, width, height)
+    frame_generator = mvd_analytics.TrackingFrameGenerator(prod_cd, tracker, width, height)
     frame_generator.set_name("Tracking frame generator")
 
     # Display the generated image.
@@ -93,8 +92,7 @@ def main():
     controller.add_component(display)
 
     # Setup rendering at 25 frames per second
-    controller.add_renderer(display,
-                            mvd_engine.Controller.RenderingMode.SimulationClock, 25.)
+    controller.add_renderer(display, mvd_engine.Controller.RenderingMode.SimulationClock, 25.)
     controller.enable_rendering(True)
 
     controller.set_slice_duration(10000)
