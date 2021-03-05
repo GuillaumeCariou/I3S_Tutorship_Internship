@@ -238,7 +238,7 @@ def convert_input_into_video_with_line_detection(input_file_name, output_file_na
             print("[" + " " * (3 - len(to_print)) + to_print + "%]   Predictions : " + str(round(prediction, 2)) + "s")
 
         if frame is not None:
-            angle, size, img_line_plus_mean = line_detection(hist, 0, False, True, frame)
+            angle, size, img_line_plus_mean, did_not_find_lines = line_detection(hist, 0, False, True, frame)
             img_array.append(img_line_plus_mean)
         else:
             break
@@ -269,7 +269,8 @@ def convert_input_into_video_with_line_detection(input_file_name, output_file_na
 
 
 if __name__ == '__main__':
-    convert_input_into_video_with_line_detection('video_cable.avi', 'output')
+    input_file_name = input("Give input file name : ")
+    convert_input_into_video_with_line_detection(input_file_name, 'output')
 """
 if __name__ == '__main__':
     hist = Historique(hist_size=historique_size)
