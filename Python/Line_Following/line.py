@@ -115,6 +115,7 @@ def line_detection(hist, ips, display_image, display_mean, original_picture):
 
     height, width, channels = original_picture.shape
     size = (width, height)
+
     # Gaussian Blur
     dst = cv2.GaussianBlur(original_picture, (5, 5), cv2.BORDER_DEFAULT)
 
