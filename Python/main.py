@@ -117,6 +117,8 @@ compteur = 0
 ips = 0
 after = time.time() + 1
 
+img_array = []
+
 # Run pipeline & print execution statistics
 while not controller.is_done():
 
@@ -126,8 +128,11 @@ while not controller.is_done():
     frame = ev_proc.draw_frame()
 
     ips, compteur, after = line.caclulate_ips(ips, compteur, after)
+
     # https://stackoverflow.com/questions/55128386/python-opencv-depth-of-image-unsupported-cv-64f
-    line.line_detection(original_picture=frame.astype('uint8') * 255, hist=angle_hist, ips=ips, display_image=False, display_mean=True)
+    angle, size, img_line_plus_mean, did_not_find_lines = line.line_detection(original_picture=frame.astype('uint8') * 255,
+                                                                              hist=angle_hist, ips=ips, display_image=False, display_mean=True)
+    img_array.append(img_line_plus_mean)
 
     # Get the last key pressed
     last_key = controller.get_last_key_pressed()
@@ -137,3 +142,22 @@ while not controller.is_done():
         break
 
 cv2.destroyAllWindows()
+
+
+# Save video
+output_file_name = "cable_line_event2_filtered"
+want_to_save_video = input("Voulez vous sauvegarder la video ? ")
+if want_to_save_video == "Y" or want_to_save_video == "y":
+    size = (0, 0)
+
+    fps = 25
+    out = cv2.VideoWriter(output_file_name + '.avi', cv2.VideoWriter_fourcc(*'XVID'), fps, size)
+    print("==================Write Image to Disk==================")
+    for i in range(len(img_array)):
+        out.write(img_array[i])
+        cv2.imshow('frame', img_array[i])
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    out.release()
+

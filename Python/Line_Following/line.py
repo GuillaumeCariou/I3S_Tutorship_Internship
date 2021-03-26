@@ -271,7 +271,7 @@ def convert_input_into_video_with_line_detection(input_file_name, output_file_na
 
 if __name__ == '__main__':
     input_file_name = input("Give input file name : ")
-    convert_input_into_video_with_line_detection(input_file_name, 'output')
+    convert_input_into_video_with_line_detection(input_file_name, 'cable_line_event2')
 """
 if __name__ == '__main__':
     hist = Historique(hist_size=historique_size)

@@ -59,7 +59,7 @@ class EventProcessor:
                 if self.display_callback:
                     print("This callback contains {} events. The first event is {}".format(len(event_buffer), event_buffer[0]))  # event format (x, y, polarity, timestamp)
                 if self.make_matrix:
-                    for x, y, polarity, timesamp in event_buffer:
+                    for x, y, polarity, timestamp in event_buffer:
                         self.image_matrix[y][x] += polarity
 
         if self.__frame_gen_name in src_2d_arrays:
