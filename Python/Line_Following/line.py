@@ -58,8 +58,8 @@ class Line:
         return angleInDegrees
 
     def get_line_coordinates(self):
-        x = (self.x1 + self.x2) / 2
-        y = (self.y1 + self.y2) / 2
+        x = int((self.x1 + self.x2) / 2)
+        y = int((self.y1 + self.y2) / 2)
         return x, y
 
     def put_line_forward(self):

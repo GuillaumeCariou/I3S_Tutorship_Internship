@@ -10,6 +10,7 @@ from Line_Following import line
 import time
 import serial
 from Python.EventProcessor import EventProcessor
+from metavision_designer_core import RoiFilter
 
 # Elegoo
 power_forward = 100
@@ -20,9 +21,10 @@ left_end = 85
 right_begin = 95
 right_end = 180
 compteur_did_not_find_lines = 0
+imprimer_taille_image = True
 
 
-def power_engine_from_angle(begin, end, angle):
+def power_engine_from_angle(begin, end, angle, line_mean):
     diff = end - begin
     diff_angle_percentage = angle / diff
     power = power_sideway_minimal + ((power_sideway_maximal - power_sideway_minimal) * diff_angle_percentage)
@@ -99,11 +101,21 @@ else:
 # Add cd_producer to the pipeline
 controller.add_component(cd_producer, "CD Producer")
 
-polarity_filter = mvd_core.PolarityFilter(cd_producer, 0)
+width = 640
+height = 480
+
+roi_width = int(width)
+roi_height = int(height / 2)
+x0 = 0
+y0 = int(roi_height / 2)
+roi_filter = RoiFilter(cd_producer, x0, y0, x0 + roi_width, y0 + roi_height)
+controller.add_component(roi_filter)
+
+polarity_filter = mvd_core.PolarityFilter(roi_filter, 0)
 controller.add_component(polarity_filter, "Polarity filter")
 
 # ActivityNoiseFilter configuration
-time_window_length = 1500  # duration in us plus c'est bas plus c'est filtré
+time_window_length = 3000  # duration in us plus c'est bas plus c'est filtré
 cd_filtered = mvd_cv.ActivityNoiseFilter(polarity_filter, time_window_length)
 controller.add_component(cd_filtered, "Noise filter")
 filtered_frame_gen = mvd_core.FrameGenerator(cd_filtered)
@@ -172,6 +184,10 @@ if arduino.isOpen():
             original_picture=frame.astype('uint8') * 255,
             hist=angle_hist, ips=ips, display_image=False, display_mean=True)
 
+        if imprimer_taille_image:
+            print(size)
+            imprimer_taille_image = False
+
         if did_not_find_lines:
             compteur_did_not_find_lines += 1
 
@@ -185,11 +201,11 @@ if arduino.isOpen():
             compteur_did_not_find_lines = 0
         elif left_end > angle >= left_begin:
             commande = "left"
-            power = power_engine_from_angle(left_begin, left_end, angle)
+            power = power_engine_from_angle(left_begin, left_end, angle, line_mean)
             send_command(power, 0)  # Le robot tourna a droite peu efficace
         elif right_end >= angle > right_begin:
             commande = "right"
-            power = power_engine_from_angle(right_begin, right_end, angle)
+            power = power_engine_from_angle(right_begin, right_end, angle, line_mean)
             send_command(0, power)  # Le robot toune a gauche tres efficace
         elif right_begin >= angle >= left_end:
             commande = "Forward"
