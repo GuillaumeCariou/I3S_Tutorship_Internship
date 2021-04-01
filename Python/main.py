@@ -13,21 +13,29 @@ from Python.EventProcessor import EventProcessor
 from metavision_designer_core import RoiFilter
 
 # Elegoo
+width = 640
+height = 480
+roi_width = int(width)
+roi_height = int(height * 0.50)
 power_forward = 100
-power_sideway_minimal = 130
-power_sideway_maximal = 200
+power_sideway_minimal = 180
+power_sideway_maximal = 225
 left_begin = 0
-left_end = 85
-right_begin = 95
-right_end = 180
+left_end = int(roi_width/2)
+right_begin = int(roi_width/2)
+right_end = roi_width
 compteur_did_not_find_lines = 0
 imprimer_taille_image = True
 
+middle_of_the_frame = int(width/2)
 
-def power_engine_from_angle(begin, end, angle, line_mean):
-    diff = end - begin
-    diff_angle_percentage = angle / diff
-    power = power_sideway_minimal + ((power_sideway_maximal - power_sideway_minimal) * diff_angle_percentage)
+
+def power_engine_from_angle(x, y):
+    if x < middle_of_the_frame:
+        diff = x / middle_of_the_frame
+    elif middle_of_the_frame < x:
+        diff = (x - middle_of_the_frame) / middle_of_the_frame
+    power = power_sideway_minimal + ((power_sideway_maximal - power_sideway_minimal) * diff)
 
     if power > 255:
         power = 255
@@ -101,13 +109,8 @@ else:
 # Add cd_producer to the pipeline
 controller.add_component(cd_producer, "CD Producer")
 
-width = 640
-height = 480
-
-roi_width = int(width)
-roi_height = int(height / 2)
 x0 = 0
-y0 = int(roi_height / 2)
+y0 = height - roi_height
 roi_filter = RoiFilter(cd_producer, x0, y0, x0 + roi_width, y0 + roi_height)
 controller.add_component(roi_filter)
 
@@ -115,7 +118,7 @@ polarity_filter = mvd_core.PolarityFilter(roi_filter, 0)
 controller.add_component(polarity_filter, "Polarity filter")
 
 # ActivityNoiseFilter configuration
-time_window_length = 3000  # duration in us plus c'est bas plus c'est filtré
+time_window_length = 10000  # duration in us plus c'est bas plus c'est filtré
 cd_filtered = mvd_cv.ActivityNoiseFilter(polarity_filter, time_window_length)
 controller.add_component(cd_filtered, "Noise filter")
 filtered_frame_gen = mvd_core.FrameGenerator(cd_filtered)
@@ -190,7 +193,10 @@ if arduino.isOpen():
 
         if did_not_find_lines:
             compteur_did_not_find_lines += 1
+        else:
+            compteur_did_not_find_lines = 0
 
+        x, y = line_mean.get_line_coordinates()
         # Reaction to angle
         # Les moteur sont inversé
         # ENA, ENB
@@ -198,16 +204,15 @@ if arduino.isOpen():
             commande = "Backward"
             send_command(10, 10)  # ceci est un code
             power = power_forward
-            compteur_did_not_find_lines = 0
-        elif left_end > angle >= left_begin:
+        elif left_end > x >= left_begin:
             commande = "left"
-            power = power_engine_from_angle(left_begin, left_end, angle, line_mean)
+            power = power_engine_from_angle(x, y)
             send_command(power, 0)  # Le robot tourna a droite peu efficace
-        elif right_end >= angle > right_begin:
+        elif right_end >= x > right_begin:
             commande = "right"
-            power = power_engine_from_angle(right_begin, right_end, angle, line_mean)
+            power = power_engine_from_angle(x, y)
             send_command(0, power)  # Le robot toune a gauche tres efficace
-        elif right_begin >= angle >= left_end:
+        elif right_begin >= x >= left_end:
             commande = "Forward"
             send_command(power_forward, power_forward)
             power = power_forward
@@ -221,22 +226,3 @@ if arduino.isOpen():
             break
 
 cv2.destroyAllWindows()
-
-"""
-# Save video
-output_file_name = "cable_line_event2_filtered"
-want_to_save_video = input("Voulez vous sauvegarder la video ? ")
-if want_to_save_video == "Y" or want_to_save_video == "y":
-    size = (0, 0)
-
-    fps = 25
-    out = cv2.VideoWriter(output_file_name + '.avi', cv2.VideoWriter_fourcc(*'XVID'), fps, size)
-    print("==================Write Image to Disk==================")
-    for i in range(len(img_array)):
-        out.write(img_array[i])
-        cv2.imshow('frame', img_array[i])
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    out.release()
-"""
