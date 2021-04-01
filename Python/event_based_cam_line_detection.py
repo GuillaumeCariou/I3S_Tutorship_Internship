@@ -8,40 +8,8 @@ import metavision_hal as mv_hal
 import cv2
 from Line_Following import line
 import time
-import serial
+
 from Python.EventProcessor import EventProcessor
-
-# Elegoo
-power_forward = 100
-power_sideway_minimal = 130
-power_sideway_maximal = 200
-left_begin = 0
-left_end = 85
-right_begin = 95
-right_end = 180
-compteur_did_not_find_lines = 0
-
-
-def power_engine_from_angle(begin, end, angle):
-    diff = end - begin
-    diff_angle_percentage = angle / diff
-    power = power_sideway_minimal + ((power_sideway_maximal - power_sideway_minimal) * diff_angle_percentage)
-
-    if power > 255:
-        power = 255
-    return int(power)
-
-
-def send_command(left, right):
-    try:
-        cmd = str(left) + ',' + str(right) + ','
-        arduino.write(cmd.encode())
-
-        arduino.flushOutput()
-        arduino.flushInput()
-    except Exception as ex:
-        print(ex)
-
 
 input_filename = "./../../out_2021-03-25_17-33-13.raw"  # ne fonctionne pas avec ~/
 # input_filename = "PATH_TO_RAW"
@@ -99,22 +67,19 @@ else:
 # Add cd_producer to the pipeline
 controller.add_component(cd_producer, "CD Producer")
 
-polarity_filter = mvd_core.PolarityFilter(cd_producer, 0)
-controller.add_component(polarity_filter, "Polarity filter")
-
 # ActivityNoiseFilter configuration
 time_window_length = 1500  # duration in us plus c'est bas plus c'est filtré
-cd_filtered = mvd_cv.ActivityNoiseFilter(polarity_filter, time_window_length)
+cd_filtered = mvd_cv.ActivityNoiseFilter(cd_producer, time_window_length)
 controller.add_component(cd_filtered, "Noise filter")
 filtered_frame_gen = mvd_core.FrameGenerator(cd_filtered)
 controller.add_component(filtered_frame_gen, "Filtered frame generator")
 
 # Create Frame Generator with 20ms accumulation time
-frame_gen = mvd_core.FrameGenerator(polarity_filter)
+frame_gen = mvd_core.FrameGenerator(cd_producer)
 frame_gen.set_dt(20000)
 controller.add_component(frame_gen, "FrameGenerator")
 
-# Get the sensor size
+# Get the sensor size.
 geometry = device.get_i_geometry()
 width = geometry.get_width()
 height = geometry.get_height()
@@ -124,11 +89,11 @@ height = geometry.get_height()
 frame_gen_name = "FrameGen"
 cd_prod_name = "CDProd"
 ev_proc = EventProcessor(event_gen_name=cd_prod_name, frame_gen_name=frame_gen_name, width=width, height=height,
-                         display_callback=False, make_matrix=False)
+                         display_callback=True, make_matrix=False)
 
 pyconsumer = mvd_core.PythonConsumer(ev_proc.event_callback)
 pyconsumer.add_source(cd_filtered, cd_prod_name)  # filtered (cd_filtered) or not filtered (cd_producer)
-pyconsumer.add_source(filtered_frame_gen, frame_gen_name)  # filtered (filtered_frame_gen) or not filtered (frame_gen)
+pyconsumer.add_source(filtered_frame_gen, frame_gen_name) # filtered (filtered_frame_gen) or not filtered (frame_gen)
 controller.add_component(pyconsumer, "PythonConsumer")
 
 controller.set_slice_duration(10000)
@@ -144,7 +109,7 @@ if not from_file:
 i_events_stream = device.get_i_events_stream()
 i_events_stream.start()
 
-# Variable line detection
+
 hist_size = input("Quelle taille d'historique voulez vous ?  > 0 ")
 angle_hist = line.Historique(hist_size=int(hist_size))
 
@@ -152,57 +117,29 @@ compteur = 0
 ips = 0
 after = time.time() + 1
 
-arduino = serial.Serial("/dev/ttyACM0", 9600, timeout=1)
+img_array = []
 
-suivi = input("Voulez vous le suivi de commande ? Y or N ")
-if suivi == "Y" or suivi == "y":
-    suivi = True
-else:
-    suivi = False
+# Run pipeline & print execution statistics
+while not controller.is_done():
 
-if arduino.isOpen():
-    print("{} connected!".format(arduino.port))
+    controller.run(do_sync)
 
-    while not controller.is_done():
-        controller.run(do_sync)
-        frame = ev_proc.draw_frame()
+    # Render frame
+    frame = ev_proc.draw_frame()
 
-        ips, compteur, after = line.calculate_ips(ips, compteur, after)
-        angle, line_mean, size, img_line_plus_mean, did_not_find_lines = line.line_detection(
-            original_picture=frame.astype('uint8') * 255,
-            hist=angle_hist, ips=ips, display_image=False, display_mean=True)
+    ips, compteur, after = line.caclulate_ips(ips, compteur, after)
 
-        if did_not_find_lines:
-            compteur_did_not_find_lines += 1
+    # https://stackoverflow.com/questions/55128386/python-opencv-depth-of-image-unsupported-cv-64f
+    angle, size, img_line_plus_mean, did_not_find_lines = line.line_detection(original_picture=frame.astype('uint8') * 255,
+                                                                              hist=angle_hist, ips=ips, display_image=False, display_mean=True)
+    img_array.append(img_line_plus_mean)
 
-        # Reaction to angle
-        # Les moteur sont inversé
-        # ENA, ENB
-        if did_not_find_lines and compteur_did_not_find_lines > 10:
-            commande = "Backward"
-            send_command(10, 10)  # ceci est un code
-            power = power_forward
-            compteur_did_not_find_lines = 0
-        elif left_end > angle >= left_begin:
-            commande = "left"
-            power = power_engine_from_angle(left_begin, left_end, angle)
-            send_command(power, 0)  # Le robot tourna a droite peu efficace
-        elif right_end >= angle > right_begin:
-            commande = "right"
-            power = power_engine_from_angle(right_begin, right_end, angle)
-            send_command(0, power)  # Le robot toune a gauche tres efficace
-        elif right_begin >= angle >= left_end:
-            commande = "Forward"
-            send_command(power_forward, power_forward)
-            power = power_forward
+    # Get the last key pressed
+    last_key = controller.get_last_key_pressed()
 
-        if suivi:
-            print("Commande = " + commande + " " * (10 - len(commande)) + "   Angle = " + str(angle) + " " * (
-                    10 - len(str(angle))) + "   Power_engine = " + str(power))
-
-        last_key = controller.get_last_key_pressed()
-        if last_key == ord('q') or last_key == KeyboardEvent.Symbol.Escape:
-            break
+    # Exit program if requested
+    if last_key == ord('q') or last_key == KeyboardEvent.Symbol.Escape:
+        break
 
 cv2.destroyAllWindows()
 

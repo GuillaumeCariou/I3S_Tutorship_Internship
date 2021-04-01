@@ -57,6 +57,11 @@ class Line:
         angleInDegrees = math.atan2(deltaY, deltaX) * 180 / np.pi
         return angleInDegrees
 
+    def get_line_coordinates(self):
+        x = (self.x1 + self.x2) / 2
+        y = (self.y1 + self.y2) / 2
+        return x, y
+
     def put_line_forward(self):
         if self.y1 > self.y2:
             buffx = self.x1
@@ -200,10 +205,10 @@ def line_detection(hist, ips, display_image, display_mean, original_picture):
             cv2.putText(img_line_plus_mean, "IPS : " + str(round(ips, 2)), (30, 60), cv2.QT_FONT_NORMAL, 1, (0, 0, 255))
         cv2.imshow('Line process Plus Mean', img_line_plus_mean)
 
-    return round(angle, 2), size, img_line_plus_mean, did_not_find_lines
+    return round(angle, 2), line_hist, size, img_line_plus_mean, did_not_find_lines
 
 
-def caclulate_ips(ips, compteur, after):
+def calculate_ips(ips, compteur, after):
     current = time.time()
     if current >= after:
         after = time.time() + 1

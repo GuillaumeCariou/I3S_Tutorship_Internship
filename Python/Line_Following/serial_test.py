@@ -3,7 +3,12 @@
 # lsusb to check device name
 # dmesg | grep "tty" to find port name
 
-import serial, time
+# ls -l /dev/ttyACM*
+# sudo chmod a+rw /dev/ttyACM0
+# restart IDE
+
+import serial
+import time
 
 if __name__ == '__main__':
 
