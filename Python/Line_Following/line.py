@@ -1,5 +1,4 @@
 import time
-
 import cv2
 import numpy as np
 import copy
@@ -171,10 +170,8 @@ def line_detection(hist, ips, display_image, display_mean, original_picture):
         y2m = int(y2m / len(lines))
         line_mean = Line(x1m, y1m, x2m, y2m)
 
-        # line_mean.put_line_forward()  # put line in the right way
-
         # Update Historique
-        if line_mean.length_of_the_line() >= minLineLength / 2:  # if (line_mean.length_of_the_line() >= minLineLength / 2):  #
+        if line_mean.length_of_the_line() >= minLineLength / 2:
             hist.add_line(line_mean)
     else:
         did_not_find_lines = True
@@ -198,8 +195,7 @@ def line_detection(hist, ips, display_image, display_mean, original_picture):
 
     if display_mean:
         # Angle
-        cv2.putText(img_line_plus_mean, "Degres : " + str(round(angle, 2)), (30, 30), cv2.QT_FONT_NORMAL, 1,
-                    (0, 0, 255))
+        cv2.putText(img_line_plus_mean, "Degres : " + str(round(angle, 2)), (30, 30), cv2.QT_FONT_NORMAL, 1, (0, 0, 255))
         # Display IPS
         if not ips == 0:
             cv2.putText(img_line_plus_mean, "IPS : " + str(round(ips, 2)), (30, 60), cv2.QT_FONT_NORMAL, 1, (0, 0, 255))
@@ -244,7 +240,7 @@ def convert_input_into_video_with_line_detection(input_file_name, output_file_na
             print("[" + " " * (3 - len(to_print)) + to_print + "%]   Predictions : " + str(round(prediction, 2)) + "s")
 
         if frame is not None:
-            angle, size, img_line_plus_mean, did_not_find_lines = line_detection(hist, 0, False, True, frame)
+            angle, line_hist, size, img_line_plus_mean, did_not_find_lines = line_detection(hist, 0, False, True, frame)
             img_array.append(img_line_plus_mean)
         else:
             break

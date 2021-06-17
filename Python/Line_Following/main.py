@@ -45,13 +45,6 @@ def send_command(left, right):
         arduino.flushInput()
     except Exception as ex:
         print(ex)
-    """
-    while arduino.inWaiting() == 0: pass
-    if arduino.inWaiting() > 0:
-        answer = arduino.readline()
-        print(answer)
-        arduino.flushInput()  # remove data after reading
-    """
 
 
 if __name__ == '__main__':
