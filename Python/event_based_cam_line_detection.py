@@ -89,7 +89,7 @@ height = geometry.get_height()
 frame_gen_name = "FrameGen"
 cd_prod_name = "CDProd"
 ev_proc = EventProcessor(event_gen_name=cd_prod_name, frame_gen_name=frame_gen_name, width=width, height=height,
-                         display_callback=True, make_matrix=False)
+                         display_callback=False, make_matrix=False)
 
 pyconsumer = mvd_core.PythonConsumer(ev_proc.event_callback)
 pyconsumer.add_source(cd_filtered, cd_prod_name)  # filtered (cd_filtered) or not filtered (cd_producer)
@@ -127,11 +127,11 @@ while not controller.is_done():
     # Render frame
     frame = ev_proc.draw_frame()
 
-    ips, compteur, after = line.caclulate_ips(ips, compteur, after)
+    ips, compteur, after = line.calculate_ips(ips, compteur, after)
 
     # https://stackoverflow.com/questions/55128386/python-opencv-depth-of-image-unsupported-cv-64f
-    angle, size, img_line_plus_mean, did_not_find_lines = line.line_detection(original_picture=frame.astype('uint8') * 255,
-                                                                              hist=angle_hist, ips=ips, display_image=False, display_mean=True)
+    angle, line_hist, size, img_line_plus_mean, did_not_find_lines = line.line_detection(original_picture=frame.astype('uint8') * 255,
+                                                                                         hist=angle_hist, ips=ips, display_image=False, display_mean=True)
     img_array.append(img_line_plus_mean)
 
     # Get the last key pressed
