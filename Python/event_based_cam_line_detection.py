@@ -89,7 +89,7 @@ height = geometry.get_height()
 frame_gen_name = "FrameGen"
 cd_prod_name = "CDProd"
 ev_proc = EventProcessor(event_gen_name=cd_prod_name, frame_gen_name=frame_gen_name, width=width, height=height,
-                         display_callback=False, make_matrix=False)
+                         display_callback=False)
 
 pyconsumer = mvd_core.PythonConsumer(ev_proc.event_callback)
 pyconsumer.add_source(cd_filtered, cd_prod_name)  # filtered (cd_filtered) or not filtered (cd_producer)
