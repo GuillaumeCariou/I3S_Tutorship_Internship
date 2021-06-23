@@ -62,7 +62,7 @@ controller.add_component(frame_gen, frame_gen_name)
 # We use PythonConsumer to "grab" the output of two components: cd_producer and frame_gen
 # pyconsumer will callback the application each time it receives data, using the event_callback function
 ev_proc = EventProcessor(event_gen_name=cd_prod_name, frame_gen_name=frame_gen_name, width=width, height=height,
-                         display_callback=False)
+                         display_callback=False, make_matrix_sum_event=True)
 
 pyconsumer = mvd_core.PythonConsumer(ev_proc.event_callback)
 pyconsumer.add_source(cd_filtered, cd_prod_name)  # filtered (cd_filtered) or not filtered (cd_producer)
@@ -83,29 +83,31 @@ i_events_stream = device.get_i_events_stream()
 i_events_stream.start()
 
 
-def print_matrix(matrix):  # pas a jours avec les tailles
-    sourcefile = open("ahah.txt", "w")
-    for i in range(len(matrix)):
-        string = ""
-        for j in range(len(matrix[i])):
-            if matrix[i][j][0] != 1.0 or matrix[i][j][1] != 1.0 or matrix[i][j][2] != 1.0:
-                print("ici j = {}  i = {}".format(j, i))
-            string += str("[{}, {}, {}, {}, {}]".format(j, i, matrix[i][j][0], matrix[i][j][1], matrix[i][j][2]))
-        print(string, file=sourcefile)
+#commencer par créer une matrice d'event avec chaque case contien l'object d'event
+#ensuite réduire la matrice
+#décider des zone a mettre en high en fonction du nombre d'event
 
-
-
+# scan pour des groupe d'event pour calculer le nombre d'event par groupe pour pouvoir décider de l'afficher ou pas
+# OU
+# scanner pour la densité par pixel est suffisant ? On peut mettre le seuil a 1 ce qui afficherai tous les évenements
+# ON pourrais aussi essayer de relier des groupe ensemble pour afficher l'entre 2 mais esque c'est util ?
 while not controller.is_done():
     controller.run(do_sync)
 
-    matrix_bool = np.zeros((roi_width, roi_height), dtype=bool)
-    matrix_bool = Foveation.scan_for_event(ev_proc.get_cut_matrix(x0, x1, y0, y1), matrix_bool, 5)
+
+    matrix_bool = Foveation.scan_for_event_density(ev_proc.get_cut_matrix_sum_event(x0, x1, y0, y1), threshold=3)
+    # j'ai une matrice contenant le nombre d'événement par pixel
+    # une matrice qui contient les événements sur chaque pixel
+    # il faut que je nétoie les truc inutiles
+    # partir de low pour faire des zone de high
 
     #réduire résolution
+    cv2.imshow('high', ev_proc.get_cut_matrix_sum_event(x0, x1, y0, y1))
+    cv2.imshow('low ', Foveation.high_to_low_resolution(ev_proc.get_cut_matrix_sum_event(x0, x1, y0, y1), divide_size_by=2, fonction=Foveation.FOR_INT))
 
-    cv2.imshow('matrix', ev_proc.get_cut_matrix(x0, x1, y0, y1))
-    cv2.imshow('bool', Foveation.convert_bool_to_int(matrix_bool))
-    cv2.imshow('frame', ev_proc.get_cut_event_2d_arrays(x0, x1, y0, y1))
+    cv2.imshow('frame ', cv2.resize(ev_proc.get_cut_event_2d_arrays(x0, x1, y0, y1), (400, 400)))
+    cv2.imshow('matrix', cv2.resize(ev_proc.get_cut_matrix_sum_event(x0, x1, y0, y1), (400, 400)))
+    cv2.imshow('bool  ', cv2.resize(Foveation.convert_bool_matrix_to_int_matrix(matrix_bool), (400, 400)))
     cv2.waitKey(1)
 
     last_key = controller.get_last_key_pressed()
@@ -113,6 +115,16 @@ while not controller.is_done():
         break
 
 cv2.destroyAllWindows()
+
+
+
+
+
+
+
+
+
+
 
 """
 else:
@@ -150,4 +162,12 @@ else:
         # Start the streaming of events
         i_events_stream = device.get_i_events_stream()
         i_events_stream.start()
+        
+    def print_matrix(matrix):
+        sourcefile = open("ahah.txt", "w")
+        for i in range(len(matrix)):
+            string = ""
+            for j in range(len(matrix[i])):
+                string += str("[{}, {}, {}]".format(j, i, matrix[i][j][0]))
+            print(string, file=sourcefile)
 """

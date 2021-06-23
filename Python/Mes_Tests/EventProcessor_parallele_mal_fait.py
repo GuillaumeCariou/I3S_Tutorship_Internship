@@ -1,5 +1,13 @@
+import multiprocessing
+from os import path
+import sys
+import metavision_designer_engine as mvd_engine
+import metavision_designer_core as mvd_core
+import metavision_hal as mv_hal
 import cv2
 import numpy as np
+from multiprocessing import Array, Pool, synchronize
+import threading
 
 
 class EventProcessor:
@@ -43,11 +51,11 @@ class EventProcessor:
         if self.make_matrix_event:
             return self.matrix_event[y0:y1, x0:x1]
 
-    def multiprocess_matrix_generation(self, e):
+    def multiprocess_matrix_generation(self, e, matrix_sum_event, matrix_event):
         if self.make_matrix_sum_event:
-            self.matrix_sum_event[e[1]][e[0]] += 1
+            matrix_sum_event[e[1]][e[0]] += 1
         if self.make_matrix_event:
-            self.matrix_event[e[1]][e[0]].add(e)
+            matrix_event[e[1]][e[0]].add(e)
 
     def event_callback(self, t, src_events, src_2d_arrays):
         if self.__event_gen_name in src_events:
@@ -63,7 +71,18 @@ class EventProcessor:
                 if self.make_matrix_event:
                     self.matrix_event = np.empty((self.height, self.width))
 
+                for e in event_buffer:
+                    t = threading.Thread(target=self.multiprocess_matrix_generation, args=(e,),
+                                         kwargs={'matrix_sum_event': self.matrix_sum_event,
+                                                 'matrix_event': self.matrix_event})
+                    t.start()
 
+                """
+                pool = Pool(processes=8)
+                pool.map(self.multiprocess_matrix_generation, event_buffer)
+                pool.close()
+                """
+                """
                 for e in event_buffer:
                     if self.make_matrix_sum_event:
                         self.matrix_sum_event[e[1]][e[0]] += 1
@@ -71,7 +90,7 @@ class EventProcessor:
                         self.matrix_event[e[1]][e[0]].add(e)
                     if self.make_matrix_event == False and self.make_matrix_sum_event == False:
                         break
-
+                """
 
         if self.__frame_gen_name in src_2d_arrays:
             self.event_2d_arrays = src_2d_arrays[self.__frame_gen_name][2]
