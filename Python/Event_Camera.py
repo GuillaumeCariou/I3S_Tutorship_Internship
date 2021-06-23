@@ -40,8 +40,8 @@ controller.add_component(cd_producer, cd_prod_name)
 
 roi_width = int(100)
 roi_height = int(100)
-x0 = int(width/2 - roi_width/2)
-y0 = int(height/2 - roi_height/2)
+x0 = int(width / 2 - roi_width / 2)
+y0 = int(height / 2 - roi_height / 2)
 x1 = x0 + roi_width
 y1 = y0 + roi_height
 roi_filter = RoiFilter(cd_producer, x0, y0, x1, y1)
@@ -62,7 +62,7 @@ controller.add_component(frame_gen, frame_gen_name)
 # We use PythonConsumer to "grab" the output of two components: cd_producer and frame_gen
 # pyconsumer will callback the application each time it receives data, using the event_callback function
 ev_proc = EventProcessor(event_gen_name=cd_prod_name, frame_gen_name=frame_gen_name, width=width, height=height,
-                         display_callback=False, make_matrix_sum_event=True)
+                         display_callback=False, make_matrix_event=True)
 
 pyconsumer = mvd_core.PythonConsumer(ev_proc.event_callback)
 pyconsumer.add_source(cd_filtered, cd_prod_name)  # filtered (cd_filtered) or not filtered (cd_producer)
@@ -82,32 +82,40 @@ if not from_file:
 i_events_stream = device.get_i_events_stream()
 i_events_stream.start()
 
-
-#commencer par créer une matrice d'event avec chaque case contien l'object d'event
-#ensuite réduire la matrice
-#décider des zone a mettre en high en fonction du nombre d'event
+# commencer par créer une matrice d'event avec chaque case contien l'object d'event
+# ensuite réduire la matrice
+# décider des zone a mettre en high en fonction du nombre d'event
 
 # scan pour des groupe d'event pour calculer le nombre d'event par groupe pour pouvoir décider de l'afficher ou pas
 # OU
 # scanner pour la densité par pixel est suffisant ? On peut mettre le seuil a 1 ce qui afficherai tous les évenements
 # ON pourrais aussi essayer de relier des groupe ensemble pour afficher l'entre 2 mais esque c'est util ?
+
+# j'ai une matrice contenant le nombre d'événement par pixel
+# une matrice qui contient les événements sur chaque pixel
+# il faut que je nétoie les truc inutiles
+# partir de low pour faire des zone de high
 while not controller.is_done():
     controller.run(do_sync)
 
+    # réduire résolution
+    cv2.imshow('frame ', cv2.resize(ev_proc.get_cut_event_2d_arrays(x0, x1, y0, y1), (400, 400)))
 
+    high_event = ev_proc.get_cut_matrix_event(x0, x1, y0, y1)
+    low_event = Foveation.high_to_low_resolution(high_event, 2, Foveation.FOR_EVENT)
+
+    cv2.imshow('high', cv2.resize(Foveation.convert_event_matrix_to_int_matrix(high_event), (400, 400)))
+    cv2.imshow('low ', Foveation.convert_event_matrix_to_int_matrix(low_event))
+
+    """
     matrix_bool = Foveation.scan_for_event_density(ev_proc.get_cut_matrix_sum_event(x0, x1, y0, y1), threshold=3)
-    # j'ai une matrice contenant le nombre d'événement par pixel
-    # une matrice qui contient les événements sur chaque pixel
-    # il faut que je nétoie les truc inutiles
-    # partir de low pour faire des zone de high
-
-    #réduire résolution
+    cv2.imshow('bool  ', cv2.resize(Foveation.convert_bool_matrix_to_int_matrix(matrix_bool), (400, 400)))
+    """
+    """
     cv2.imshow('high', ev_proc.get_cut_matrix_sum_event(x0, x1, y0, y1))
     cv2.imshow('low ', Foveation.high_to_low_resolution(ev_proc.get_cut_matrix_sum_event(x0, x1, y0, y1), divide_size_by=2, fonction=Foveation.FOR_INT))
+    """
 
-    cv2.imshow('frame ', cv2.resize(ev_proc.get_cut_event_2d_arrays(x0, x1, y0, y1), (400, 400)))
-    cv2.imshow('matrix', cv2.resize(ev_proc.get_cut_matrix_sum_event(x0, x1, y0, y1), (400, 400)))
-    cv2.imshow('bool  ', cv2.resize(Foveation.convert_bool_matrix_to_int_matrix(matrix_bool), (400, 400)))
     cv2.waitKey(1)
 
     last_key = controller.get_last_key_pressed()
@@ -115,16 +123,6 @@ while not controller.is_done():
         break
 
 cv2.destroyAllWindows()
-
-
-
-
-
-
-
-
-
-
 
 """
 else:

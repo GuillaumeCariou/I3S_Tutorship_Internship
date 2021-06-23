@@ -14,7 +14,7 @@ class EventProcessor:
         self.make_matrix_sum_event = make_matrix_sum_event
         self.matrix_sum_event = np.zeros((self.height, self.width))
         self.make_matrix_event = make_matrix_event
-        self.matrix_event = np.empty((self.height, self.width))
+        self.matrix_event = np.empty((self.height, self.width), dtype=np.ndarray)
         self.display_callback = display_callback
 
     def draw_frame(self):
@@ -61,14 +61,15 @@ class EventProcessor:
                 if self.make_matrix_sum_event:
                     self.matrix_sum_event = np.zeros((self.height, self.width))
                 if self.make_matrix_event:
-                    self.matrix_event = np.empty((self.height, self.width))
-
+                    self.matrix_event = np.empty((self.height, self.width), dtype=np.ndarray)
 
                 for e in event_buffer:
                     if self.make_matrix_sum_event:
                         self.matrix_sum_event[e[1]][e[0]] += 1
                     if self.make_matrix_event:
-                        self.matrix_event[e[1]][e[0]].add(e)
+                        if self.matrix_event[e[1]][e[0]] is None:
+                            self.matrix_event[e[1]][e[0]] = []
+                        self.matrix_event[e[1]][e[0]].append(e)
                     if self.make_matrix_event == False and self.make_matrix_sum_event == False:
                         break
 
