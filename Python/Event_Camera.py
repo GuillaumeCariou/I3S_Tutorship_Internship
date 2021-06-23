@@ -95,6 +95,17 @@ i_events_stream.start()
 # une matrice qui contient les événements sur chaque pixel
 # il faut que je nétoie les truc inutiles
 # partir de low pour faire des zone de high
+
+
+def print_matrix(matrix):
+    sourcefile = open("ahah.txt", "w")
+    for i in range(len(matrix)):
+        string = ""
+        for j in range(len(matrix[i])):
+            string += str("[{}]".format(matrix[i][j]))
+        print(string, file=sourcefile)
+
+
 while not controller.is_done():
     controller.run(do_sync)
 
@@ -103,9 +114,10 @@ while not controller.is_done():
 
     high_event = ev_proc.get_cut_matrix_event(x0, x1, y0, y1)
     low_event = Foveation.high_to_low_resolution(high_event, 2, Foveation.FOR_EVENT)
+    low_int = Foveation.convert_event_matrix_to_int_matrix(low_event)
 
     cv2.imshow('high', cv2.resize(Foveation.convert_event_matrix_to_int_matrix(high_event), (400, 400)))
-    cv2.imshow('low ', Foveation.convert_event_matrix_to_int_matrix(low_event))
+    cv2.imshow('low ', cv2.resize(low_int, (400, 400)))
 
     """
     matrix_bool = Foveation.scan_for_event_density(ev_proc.get_cut_matrix_sum_event(x0, x1, y0, y1), threshold=3)

@@ -23,31 +23,32 @@ def for_tab(i, j, k, l, a, b, n_matrix, matrix, divide_size_by):
     return n_matrix[i][j]
 
 
-# ça me semble pas encore juste, ne gére pas plusieur événement dans une seul case
+# met les événement si il y en a sinon None
 def for_event(i, j, k, l, a, b, n_matrix, matrix, divide_size_by):
     # event format (x, y, polarity, timestamp)
-    if n_matrix[i][j] is None:
-        n_matrix[i][j] = (0, 0, 0, 0)
     event = matrix[a][b]
-    # convertie en pourcentage ((100 / (divide_size_by * divide_size_by)) / 100)
     if event is not None:
+        if n_matrix[i][j] is None:
+            n_matrix[i][j] = (0, 0, 0, 0)
         for n in range(len(event)):
-
+            """"
             print("\ni={} j={} n={}".format(i, j, n))
             print("i={} j={} n={}".format(len(n_matrix), len(n_matrix[i]), len(event)))
             print(event[n])
             print("0={} 1={} 2={} 3={}".format(event[n][0], event[n][1], event[n][2], event[n][3]))
             print(n_matrix[i][j])
-
+            """
+            # convertie en pourcentage ((100 / (divide_size_by * divide_size_by)) / 100)
             polarity = n_matrix[i][j][2] + event[n][2] * ((100 / (divide_size_by * divide_size_by)) / 100)
-            print(((100 / (divide_size_by * divide_size_by)) / 100))
+            # print(((100 / (divide_size_by * divide_size_by)) / 100))
             ts = n_matrix[i][j][3] + event[n][3]
             n_matrix[i][j] = (i, j, polarity, ts)
-            print("i={} j={} polarity={} ts={}\n".format(i, j, polarity, ts))
+            # print("i={} j={} polarity={} ts={}".format(i, j, polarity, ts))
         if k == divide_size_by - 1 and l == divide_size_by - 1 and len(event) > 0:
-            polarity = int(n_matrix[i][j][2] / (divide_size_by ** 2))
+            polarity = n_matrix[i][j][2] / (divide_size_by ** 2)
             ts = int(n_matrix[i][j][3] / (divide_size_by ** 2))
             n_matrix[i][j] = (n_matrix[i][j][0], n_matrix[i][j][1], polarity, ts)
+            # print("i={} j={} polarity={} ts={}\n".format(n_matrix[i][j][0], n_matrix[i][j][1], polarity, ts))
     return n_matrix[i][j]
 
 
@@ -79,12 +80,10 @@ def convert_event_matrix_to_int_matrix(matrix):
                 matrix_int[i][j] = 0
             else:
                 matrix_int[i][j] = len(matrix[i][j])
-    print(matrix_int)
     return matrix_int
 
 
 def convert_bool_matrix_to_int_matrix(matrix):
-    # matrix_bool = np.zeros((roi_width, roi_height), dtype=bool)
     matrix_int = np.zeros((len(matrix), len(matrix[0])))
     for i in range(len(matrix)):
         for j in range(len(matrix[i])):
@@ -93,6 +92,7 @@ def convert_bool_matrix_to_int_matrix(matrix):
     return matrix_int
 
 
+# outdated
 def scan_for_event_density(matrix_event, threshold=1):
     matrix_bool = np.zeros((len(matrix_event), len(matrix_event[0])), dtype=bool)
     for i in range(len(matrix_event)):
