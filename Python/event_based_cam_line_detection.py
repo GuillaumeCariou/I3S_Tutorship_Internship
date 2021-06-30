@@ -125,7 +125,8 @@ while not controller.is_done():
     controller.run(do_sync)
 
     # Render frame
-    frame = ev_proc.draw_frame()
+    frame = ev_proc.get_event_2d_arrays().squeeze()
+    cv2.imshow('frame', frame)
 
     ips, compteur, after = line.calculate_ips(ips, compteur, after)
 

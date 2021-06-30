@@ -1,5 +1,3 @@
-from os import path
-import sys
 import Foveation
 import metavision_designer_engine as mvd_engine
 import numpy as np
@@ -11,12 +9,7 @@ import cv2
 from Python.EventProcessor import EventProcessor
 from metavision_designer_core import RoiFilter
 
-input_filename = "./../../out_2021-03-25_17-33-13.raw"  # ne fonctionne pas avec ~/
 
-# cam = input("Do you want to use cam ? Y or N ")
-
-# if cam == "Y" or cam == "y":
-from_file = False
 controller = Controller()
 
 device = mv_hal.DeviceDiscovery.open('')
@@ -53,16 +46,17 @@ cd_filtered = mvd_cv.ActivityNoiseFilter(roi_filter, time_window_length)
 controller.add_component(cd_filtered, "Noise filter")
 filtered_frame_gen = mvd_core.FrameGenerator(cd_filtered)
 controller.add_component(filtered_frame_gen, "Filtered frame generator")
-######################################OR######################################
-# Create Frame Generator with 20ms accumulation time
+
+
+# Create Frame Generator with 30ms accumulation time
 frame_gen = mvd_core.FrameGenerator(roi_filter)
-frame_gen.set_dt(20000)
+frame_gen.set_dt(30000)
 controller.add_component(frame_gen, frame_gen_name)
 
 # We use PythonConsumer to "grab" the output of two components: cd_producer and frame_gen
 # pyconsumer will callback the application each time it receives data, using the event_callback function
 ev_proc = EventProcessor(event_gen_name=cd_prod_name, frame_gen_name=frame_gen_name, width=width, height=height,
-                         display_callback=False, make_matrix_event=True)
+                         display_callback=False, make_matrix_event=True, make_matrix_sum_event=True)
 
 pyconsumer = mvd_core.PythonConsumer(ev_proc.event_callback)
 pyconsumer.add_source(cd_filtered, cd_prod_name)  # filtered (cd_filtered) or not filtered (cd_producer)
@@ -71,12 +65,10 @@ controller.add_component(pyconsumer, "PythonConsumer")
 
 controller.set_slice_duration(20000)
 controller.set_batch_duration(50000)
-do_sync = True if from_file else False
 
 # Start the camera
-if not from_file:
-    simple_device = device.get_i_device_control()
-    simple_device.start()
+simple_device = device.get_i_device_control()
+simple_device.start()
 
 # Start the streaming of events
 i_events_stream = device.get_i_events_stream()
@@ -95,28 +87,18 @@ i_events_stream.start()
 # une matrice qui contient les événements sur chaque pixel
 # il faut que je nétoie les truc inutiles
 # partir de low pour faire des zone de high
-
-
-def print_matrix(matrix):
-    sourcefile = open("ahah.txt", "w")
-    for i in range(len(matrix)):
-        string = ""
-        for j in range(len(matrix[i])):
-            string += str("[{}]".format(matrix[i][j]))
-        print(string, file=sourcefile)
-
-
 while not controller.is_done():
-    controller.run(do_sync)
+    controller.run(False)
 
     # réduire résolution
     cv2.imshow('frame ', cv2.resize(ev_proc.get_cut_event_2d_arrays(x0, x1, y0, y1), (400, 400)))
 
     high_event = ev_proc.get_cut_matrix_event(x0, x1, y0, y1)
     low_event = Foveation.high_to_low_resolution(high_event, 2, Foveation.FOR_EVENT)
+    high_int = Foveation.convert_event_matrix_to_int_matrix(high_event)
     low_int = Foveation.convert_event_matrix_to_int_matrix(low_event)
 
-    cv2.imshow('high', cv2.resize(Foveation.convert_event_matrix_to_int_matrix(high_event), (400, 400)))
+    cv2.imshow('high', cv2.resize(high_int, (400, 400)))
     cv2.imshow('low ', cv2.resize(low_int, (400, 400)))
 
     """
@@ -180,4 +162,13 @@ else:
             for j in range(len(matrix[i])):
                 string += str("[{}, {}, {}]".format(j, i, matrix[i][j][0]))
             print(string, file=sourcefile)
+            
+    def print_matrix(matrix):
+    sourcefile = open("ahah.txt", "w")
+    for i in range(len(matrix)):
+        string = ""
+        for j in range(len(matrix[i])):
+            string += str("[{}]".format(matrix[i][j]))
+        print(string, file=sourcefile)
+
 """

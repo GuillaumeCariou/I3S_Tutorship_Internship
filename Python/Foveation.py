@@ -1,12 +1,4 @@
-import sys
-import metavision_designer_engine as mvd_engine
 import numpy as np
-from metavision_designer_engine import Controller, KeyboardEvent
-import metavision_designer_cv as mvd_cv
-import metavision_designer_core as mvd_core
-import metavision_hal as mv_hal
-import cv2
-from Python.EventProcessor import EventProcessor
 
 
 def for_int(i, j, k, l, a, b, n_matrix, matrix, divide_size_by):
@@ -24,31 +16,28 @@ def for_tab(i, j, k, l, a, b, n_matrix, matrix, divide_size_by):
 
 
 # met les événement si il y en a sinon None
+# ne crée qu'un seul événement par pixel
+# rajouter un compteur dévénement ?
 def for_event(i, j, k, l, a, b, n_matrix, matrix, divide_size_by):
     # event format (x, y, polarity, timestamp)
     event = matrix[a][b]
     if event is not None:
         if n_matrix[i][j] is None:
-            n_matrix[i][j] = (0, 0, 0, 0)
+            n_matrix[i][j] = [(0, 0, 0, 0), 0]
+        event_part = n_matrix[i][j][0]
+        compteur_part = n_matrix[i][j][1]
         for n in range(len(event)):
-            """"
-            print("\ni={} j={} n={}".format(i, j, n))
-            print("i={} j={} n={}".format(len(n_matrix), len(n_matrix[i]), len(event)))
-            print(event[n])
-            print("0={} 1={} 2={} 3={}".format(event[n][0], event[n][1], event[n][2], event[n][3]))
-            print(n_matrix[i][j])
-            """
             # convertie en pourcentage ((100 / (divide_size_by * divide_size_by)) / 100)
-            polarity = n_matrix[i][j][2] + event[n][2] * ((100 / (divide_size_by * divide_size_by)) / 100)
-            # print(((100 / (divide_size_by * divide_size_by)) / 100))
-            ts = n_matrix[i][j][3] + event[n][3]
-            n_matrix[i][j] = (i, j, polarity, ts)
-            # print("i={} j={} polarity={} ts={}".format(i, j, polarity, ts))
+            polarity = event_part[2] + event[n][2] * ((100 / (divide_size_by * divide_size_by)) / 100)
+            ts = event_part[3] + event[n][3]
+            event_part = (i, j, polarity, ts)
+            compteur_part += 1
         if k == divide_size_by - 1 and l == divide_size_by - 1 and len(event) > 0:
-            polarity = n_matrix[i][j][2] / (divide_size_by ** 2)
-            ts = int(n_matrix[i][j][3] / (divide_size_by ** 2))
-            n_matrix[i][j] = (n_matrix[i][j][0], n_matrix[i][j][1], polarity, ts)
-            # print("i={} j={} polarity={} ts={}\n".format(n_matrix[i][j][0], n_matrix[i][j][1], polarity, ts))
+            polarity = event_part[2] / (divide_size_by ** 2)
+            ts = int(event_part[3] / (divide_size_by ** 2))
+            event_part = (event_part[0], event_part[1], polarity, ts)
+        n_matrix[i][j][0] = event_part
+        n_matrix[i][j][1] = compteur_part
     return n_matrix[i][j]
 
 
@@ -58,7 +47,7 @@ FOR_EVENT = for_event
 
 
 def high_to_low_resolution(matrix, divide_size_by, fonction):
-    # done un matrice rempli de None
+    # donne une matrice rempli de None
     n_matrix = np.empty((int(len(matrix) / divide_size_by), int(len(matrix[0]) / divide_size_by)), dtype=np.ndarray)
     for i in range(len(n_matrix)):
         for j in range(len(n_matrix[0])):
@@ -67,7 +56,6 @@ def high_to_low_resolution(matrix, divide_size_by, fonction):
                 for l in range(divide_size_by):
                     a = (divide_size_by * i) + k
                     b = (divide_size_by * j) + l
-                    # print('i={}   j={}   k={}   l={}   a={}   b={}'.format(i, j, k, l, a, b))
                     n_matrix[i][j] = fonction(i, j, k, l, a, b, n_matrix, matrix, divide_size_by)
     return n_matrix
 
@@ -79,7 +67,7 @@ def convert_event_matrix_to_int_matrix(matrix):
             if matrix[i][j] is None:
                 matrix_int[i][j] = 0
             else:
-                matrix_int[i][j] = len(matrix[i][j])
+                matrix_int[i][j] = matrix[i][j][0][2]  # va chercher la polarité
     return matrix_int
 
 
