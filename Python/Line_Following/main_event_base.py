@@ -6,10 +6,10 @@ import metavision_designer_cv as mvd_cv
 import metavision_designer_core as mvd_core
 import metavision_hal as mv_hal
 import cv2
-from Line_Following import line
+from Python.Line_Following.Line import line
 import time
 import serial
-from Python.EventProcessor import EventProcessor
+from Python.Event_Processor.EventProcessor import EventProcessor
 from metavision_designer_core import RoiFilter
 
 # Elegoo

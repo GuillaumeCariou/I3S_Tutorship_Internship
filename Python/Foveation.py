@@ -1,6 +1,9 @@
 import numpy as np
 
 
+# Rien ne fait de la Foveation ici pour l'instant
+
+
 def for_int(i, j, k, l, a, b, n_matrix, matrix, divide_size_by):
     if n_matrix[i][j] is None:
         n_matrix[i][j] = 0

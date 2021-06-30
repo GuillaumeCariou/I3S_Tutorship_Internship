@@ -6,10 +6,10 @@ import metavision_designer_cv as mvd_cv
 import metavision_designer_core as mvd_core
 import metavision_hal as mv_hal
 import cv2
-from Line_Following import line
+from Python.Line_Following.Line import line
 import time
 
-from Python.EventProcessor import EventProcessor
+from Python.Event_Processor.EventProcessor import EventProcessor
 
 input_filename = "./../../out_2021-03-25_17-33-13.raw"  # ne fonctionne pas avec ~/
 # input_filename = "PATH_TO_RAW"

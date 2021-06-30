@@ -1,12 +1,10 @@
 import Foveation
-import metavision_designer_engine as mvd_engine
-import numpy as np
 from metavision_designer_engine import Controller, KeyboardEvent
 import metavision_designer_cv as mvd_cv
 import metavision_designer_core as mvd_core
 import metavision_hal as mv_hal
 import cv2
-from Python.EventProcessor import EventProcessor
+from Python.Event_Processor.EventProcessor import EventProcessor
 from metavision_designer_core import RoiFilter
 
 
