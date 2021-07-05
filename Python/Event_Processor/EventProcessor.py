@@ -10,6 +10,7 @@ class EventProcessor:
         self.__frame_gen_name = frame_gen_name
         self.width = width
         self.height = height
+        self.event = None
         self.event_2d_arrays = None
         self.make_matrix_sum_event = make_matrix_sum_event
         self.matrix_sum_event = np.zeros((self.height, self.width))
@@ -43,6 +44,9 @@ class EventProcessor:
         if self.make_matrix_event:
             return self.matrix_event[y0:y1, x0:x1]
 
+    def get_event(self):
+        return self.event
+
     def multiprocess_matrix_generation(self, e):
         if self.make_matrix_sum_event:
             self.matrix_sum_event[e[1]][e[0]] += 1
@@ -52,6 +56,7 @@ class EventProcessor:
     def event_callback(self, t, src_events, src_2d_arrays):
         if self.__event_gen_name in src_events:
             event_buffer = src_events[self.__event_gen_name][2]
+            self.event = event_buffer
             if len(event_buffer) != 0:
                 if self.display_callback:
                     # event format (x, y, polarity, timestamp)
