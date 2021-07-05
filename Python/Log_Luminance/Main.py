@@ -70,14 +70,15 @@ height = geometry.get_height()
 print("Sensor size width = {}   height = {}".format(width, height))
 
 # resize
-roi_width = int(300)
-roi_height = int(300)
+roi_width = int(100)
+roi_height = int(100)
 x0 = int(width / 2 - roi_width / 2)
 y0 = int(height / 2 - roi_height / 2)
 x1 = x0 + roi_width
 y1 = y0 + roi_height
 roi_filter = RoiFilter(cd_producer, x0, y0, x1, y1)
 controller.add_component(roi_filter)
+print("ROI size width = {}   height = {}".format(roi_width, roi_height))
 print("Number of pixels = {}".format(roi_width * roi_height))
 
 # ActivityNoiseFilter configuration
@@ -130,7 +131,7 @@ while not controller.is_done():
 
     # Render frame
     events = ev_proc.get_event()  # tableau d'event
-    Log_Luminance.log_luminance(events, matrix_level_HQ, matrix_level_LQ, divide_matrix_by)
+    Log_Luminance.log_luminance(events, matrix_level_HQ, matrix_level_LQ, divide_matrix_by, (width, height), (roi_width, roi_height))
 
 
     # Get the last key pressed
