@@ -129,15 +129,21 @@ matrix_level_LQ = Log_Luminance.gen_matrix_PixelState(int(roi_width / divide_mat
 while not controller.is_done():
     controller.run(do_sync)
 
-    # Render frame
     events = ev_proc.get_event()  # tableau d'event
-    Log_Luminance.log_luminance(events, matrix_level_HQ, matrix_level_LQ, divide_matrix_by, (width, height), (roi_width, roi_height))
+    events_LQ = Log_Luminance.log_luminance(events, matrix_level_HQ, matrix_level_LQ, divide_matrix_by, (width, height), (roi_width, roi_height))
+
+    image = Log_Luminance.create_image_from_log_luminance(events_LQ, (roi_width, roi_height))
+    print(events_LQ)
+    cv2.imshow("pixelstateHQ", cv2.resize(Log_Luminance.create_image_from_pixel_state(matrix_level_HQ), (400, 400)))
+    cv2.imshow("pixelstateLQ", cv2.resize(Log_Luminance.create_image_from_pixel_state(matrix_level_LQ), (400, 400)))
+    cv2.imshow('log_luminance', cv2.resize(image, (400, 400)))
+    # Log_Luminance.print_matrix_Pixel_State_in_file(matrix_level_HQ,"HQ.txt")
+    # Log_Luminance.print_matrix_Pixel_State_in_file(matrix_level_LQ,"LQ.txt")
 
 
-    # Get the last key pressed
+
+
     last_key = controller.get_last_key_pressed()
-
-    # Exit program if requested
     if last_key == ord('q') or last_key == KeyboardEvent.Symbol.Escape:
         break
 
