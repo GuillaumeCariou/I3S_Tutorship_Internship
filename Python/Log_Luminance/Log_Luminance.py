@@ -65,16 +65,31 @@ def log_luminance(events, matrix_level_HQ, matrix_level_LQ, divide_matrix_by, se
             # récupérer level LQ aux bonnes coordonnées
             x_matrix_LQ = int(x_matrix_HQ / divide_matrix_by)  # compris entre x_LQ et x_lq + (divide_matrix_by-1)
             y_matrix_LQ = int(y_matrix_HQ / divide_matrix_by)
-            level_LQ = matrix_level_LQ[x_matrix_LQ][y_matrix_LQ].get_level()
+            current_level_LQ = matrix_level_LQ[x_matrix_LQ][y_matrix_LQ].get_level()
 
+            # faire fonctionner le treshold
+            current_level_LQ = current_level_LQ - (current_level_LQ % treshold)
+            new_level_LQ = new_level_LQ - (new_level_LQ % treshold)
+            difference = abs(new_level_LQ - current_level_LQ)
+            nombre_event_a_emetre = int(difference / treshold)
+
+            if current_level_LQ + treshold < new_level_LQ:
+                for i in range(nombre_event_a_emetre):
+                    events_LQ.append([x_matrix_LQ, y_matrix_LQ, 1, e[3]])
+                matrix_level_LQ[x_matrix_LQ][y_matrix_LQ].set_level(new_level_LQ)
+            elif current_level_LQ - treshold > new_level_LQ:
+                matrix_level_LQ[x_matrix_LQ][y_matrix_LQ].set_level(new_level_LQ)
+                for i in range(nombre_event_a_emetre):
+                    events_LQ.append([x_matrix_LQ, y_matrix_LQ, 0, e[3]])
+            """
             # ne marche pas pour l'instant avec le threshold
-            if int(level_LQ) + treshold < int(new_level_LQ):
+            if int(current_level_LQ) + treshold < int(new_level_LQ):
                 events_LQ.append([x_matrix_LQ, y_matrix_LQ, 1, e[3]])
                 matrix_level_LQ[x_matrix_LQ][y_matrix_LQ].set_level(new_level_LQ)
-            elif int(level_LQ) - treshold > int(new_level_LQ):
+            elif int(current_level_LQ) - treshold > int(new_level_LQ):
                 events_LQ.append([x_matrix_LQ, y_matrix_LQ, 0, e[3]])
                 matrix_level_LQ[x_matrix_LQ][y_matrix_LQ].set_level(new_level_LQ)
-
+            """
 
     return events_LQ
     # return un tableau d'event emit avec x_matrix_HQ et y_matrix_HQ compris entre 0 et la taille de matrix level LQ selon largeur ou hauteur

@@ -135,9 +135,9 @@ while not controller.is_done():
     controller.run(do_sync)
 
     events = ev_proc.get_event()  # tableau d'event
-    events_LQ = Log_Luminance.log_luminance(events, matrix_level_HQ, matrix_level_LQ, divide_matrix_by, (width, height), (roi_width, roi_height))
+    events_LQ = Log_Luminance.log_luminance(events, matrix_level_HQ, matrix_level_LQ, divide_matrix_by, (width, height), (roi_width, roi_height), treshold=1)
 
-    # cette fonction ne marche pas et je ne comprend pas POURQUOI AAAAAAAAHHHHH
+    # cette fonction ne marche pas et je ne comprend pas POURQUOI AAAAAAAAHHHHH: elle fonctionne maintenant mais le commentaire me fait sourir
     img = Gen_Image.create_image_rgb_from_log_luminance(events_LQ, int(roi_width/2), int(roi_height/2))
     array_img.append(cv2.resize(img, (200, 200)))
     cv2.imshow("Log Luminance", cv2.resize(img, (200, 200)))
