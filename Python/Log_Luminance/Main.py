@@ -11,7 +11,8 @@ from Python.Foveation import Foveation
 from Python.Log_Luminance import Log_Luminance, Gen_Image
 from metavision_designer_core import RoiFilter
 
-input_filename = "./../../out_2021-03-25_17-33-13.raw"  # ne fonctionne pas avec ~/
+input_filename = "./../../Movie/RAW/out_2021-07-07_13-13-28.raw"  # ne fonctionne pas avec ~/
+
 # input_filename = "PATH_TO_RAW"
 
 cam = input("Do you want to use cam ? Y or N ")
