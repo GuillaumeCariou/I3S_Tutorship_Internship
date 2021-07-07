@@ -126,7 +126,7 @@ matrix_level_HQ = Log_Luminance.gen_matrix_PixelState(roi_width, roi_height)
 matrix_level_LQ = Log_Luminance.gen_matrix_PixelState(int(roi_width / divide_matrix_by), int(roi_height / divide_matrix_by))
 
 #Make Video
-make_video_at_the_end = True
+make_video_at_the_end = False
 nb_second_de_video = 15
 nom_video = 'ahahah'
 array_img = []
