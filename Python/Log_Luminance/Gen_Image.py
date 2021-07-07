@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import time
 
+
 def print_matrix_PixelState(m):
     for i in range(len(m)):
         print('[', end='')

@@ -35,8 +35,8 @@ def log_luminance(events, matrix_level_HQ, matrix_level_LQ, divide_matrix_by, se
     events_LQ = []
     if len(events) > 0:
         # lorsque je génére la matrice pixelstate HQ je doit rajouter un valeur corespondant au cordonnées de ce pixel pour le pixel LQ
-        x_minus = int((sensor_size[0] / divide_matrix_by) - (ROI_size[0] / divide_matrix_by))
-        y_minus = int((sensor_size[1] / divide_matrix_by) - (ROI_size[1] / divide_matrix_by))
+        x_minus = int((sensor_size[0] - ROI_size[0]) / 2)
+        y_minus = int((sensor_size[1] - ROI_size[1]) / 2)
         for e in events:
             # ajouter ou soustraire le niveau au pixel HQ
             x_matrix_HQ = e[0] - x_minus - 1

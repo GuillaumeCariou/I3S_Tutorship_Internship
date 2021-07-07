@@ -1,19 +1,16 @@
 from os import path
 import sys
 import metavision_designer_engine as mvd_engine
-from metavision_designer_engine import Controller, KeyboardEvent
+from metavision_designer_engine import Controller
 import metavision_designer_cv as mvd_cv
 import metavision_designer_core as mvd_core
 import metavision_hal as mv_hal
 import cv2
 from Python.Event_Processor.EventProcessor import EventProcessor
-from Python.Foveation import Foveation
 from Python.Log_Luminance import Log_Luminance, Gen_Image
 from metavision_designer_core import RoiFilter
 
 input_filename = "../../Movie/Log_Luminance/out_2021-07-07_13-13-28.raw"  # ne fonctionne pas avec ~/
-
-# input_filename = "PATH_TO_RAW"
 
 cam = input("Do you want to use cam ? Y or N ")
 
@@ -71,16 +68,15 @@ height = geometry.get_height()
 print("Sensor size width = {}   height = {}".format(width, height))
 
 # resize
-roi_width = int(100)
-roi_height = int(100)
+roi_width = int(200)
+roi_height = int(200)
 x0 = int(width / 2 - roi_width / 2)
 y0 = int(height / 2 - roi_height / 2)
 x1 = x0 + roi_width
 y1 = y0 + roi_height
 roi_filter = RoiFilter(cd_producer, x0, y0, x1, y1)
 controller.add_component(roi_filter)
-print("ROI size width = {}   height = {}".format(roi_width, roi_height))
-print("Number of pixels = {}".format(roi_width * roi_height))
+print("ROI size width = {}   height = {}   Number of pixels = {}".format(roi_width, roi_height, roi_width * roi_height))
 
 # ActivityNoiseFilter configuration
 time_window_length = 1500  # duration in us plus c'est bas plus c'est filtré
@@ -121,7 +117,9 @@ i_events_stream.start()
 
 #################################Parameters#################################
 # on part du principe que l'image est carré
-divide_matrix_by = 2
+divide_matrix_by = 4
+print("divide size width = {}   height = {}   Number of pixels = {}".format(int(roi_width/divide_matrix_by), int(roi_height/divide_matrix_by),
+                                                                            int(roi_width/divide_matrix_by) * int(roi_height/divide_matrix_by)))
 matrix_level_HQ = Log_Luminance.gen_matrix_PixelState(roi_width, roi_height)
 matrix_level_LQ = Log_Luminance.gen_matrix_PixelState(int(roi_width / divide_matrix_by), int(roi_height / divide_matrix_by))
 
@@ -135,10 +133,10 @@ while not controller.is_done():
     controller.run(do_sync)
 
     events = ev_proc.get_event()  # tableau d'event
-    events_LQ = Log_Luminance.log_luminance(events, matrix_level_HQ, matrix_level_LQ, divide_matrix_by, (width, height), (roi_width, roi_height), treshold=1)
+    events_LQ = Log_Luminance.log_luminance(events, matrix_level_HQ, matrix_level_LQ, divide_matrix_by, (width, height), (roi_width, roi_height), treshold=0.2)
 
     # cette fonction ne marche pas et je ne comprend pas POURQUOI AAAAAAAAHHHHH: elle fonctionne maintenant mais le commentaire me fait sourir
-    img = Gen_Image.create_image_rgb_from_log_luminance(events_LQ, int(roi_width/2), int(roi_height/2))
+    img = Gen_Image.create_image_rgb_from_log_luminance(events_LQ, int(roi_width/divide_matrix_by), int(roi_height/divide_matrix_by))
     array_img.append(cv2.resize(img, (200, 200)))
     cv2.imshow("Log Luminance", cv2.resize(img, (200, 200)))
     #cv2.imshow("pixelstateHQ", cv2.resize(Gen_Image.create_image_rgb_from_pixel_state(matrix_level_HQ), (400, 400)))
