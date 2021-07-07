@@ -8,7 +8,7 @@ import metavision_hal as mv_hal
 import cv2
 from Python.Event_Processor.EventProcessor import EventProcessor
 from Python.Foveation import Foveation
-from Python.Log_Luminance import Log_Luminance
+from Python.Log_Luminance import Log_Luminance, Gen_Image
 from metavision_designer_core import RoiFilter
 
 input_filename = "./../../out_2021-03-25_17-33-13.raw"  # ne fonctionne pas avec ~/
@@ -125,23 +125,21 @@ matrix_level_HQ = Log_Luminance.gen_matrix_PixelState(roi_width, roi_height)
 matrix_level_LQ = Log_Luminance.gen_matrix_PixelState(int(roi_width / divide_matrix_by), int(roi_height / divide_matrix_by))
 
 
-
 while not controller.is_done():
     controller.run(do_sync)
 
     events = ev_proc.get_event()  # tableau d'event
     events_LQ = Log_Luminance.log_luminance(events, matrix_level_HQ, matrix_level_LQ, divide_matrix_by, (width, height), (roi_width, roi_height))
 
-    image = Log_Luminance.create_image_from_log_luminance(events_LQ, (roi_width, roi_height))
-    print(events_LQ)
-    cv2.imshow("pixelstateHQ", cv2.resize(Log_Luminance.create_image_from_pixel_state(matrix_level_HQ), (400, 400)))
-    cv2.imshow("pixelstateLQ", cv2.resize(Log_Luminance.create_image_from_pixel_state(matrix_level_LQ), (400, 400)))
-    cv2.imshow('log_luminance', cv2.resize(image, (400, 400)))
-    # Log_Luminance.print_matrix_Pixel_State_in_file(matrix_level_HQ,"HQ.txt")
-    # Log_Luminance.print_matrix_Pixel_State_in_file(matrix_level_LQ,"LQ.txt")
+    # cette fonction ne marche pas et je ne comprend pas POURQUOI AAAAAAAAHHHHH
+    img = Gen_Image.create_image_rgb_from_log_luminance(events_LQ, int(roi_width/2), int(roi_height/2))
+
+    cv2.imshow("Log Luminance", cv2.resize(img, (200, 200)))
+    #cv2.imshow("pixelstateHQ", cv2.resize(Gen_Image.create_image_rgb_from_pixel_state(matrix_level_HQ), (400, 400)))
+    #cv2.imshow("pixelstateLQ", cv2.resize(Gen_Image.create_image_rgb_from_pixel_state(matrix_level_LQ), (400, 400)))
 
 
-
+    cv2.waitKey(1)  # ne jamais oublié cet ligne de code qui empêche l'image de s'afficher si elle n'est pas la
 
     last_key = controller.get_last_key_pressed()
     if last_key == ord('q') or last_key == KeyboardEvent.Symbol.Escape:
