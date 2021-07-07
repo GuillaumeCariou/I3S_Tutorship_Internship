@@ -11,7 +11,7 @@ from Python.Foveation import Foveation
 from Python.Log_Luminance import Log_Luminance, Gen_Image
 from metavision_designer_core import RoiFilter
 
-input_filename = "./../../Movie/RAW/out_2021-07-07_13-13-28.raw"  # ne fonctionne pas avec ~/
+input_filename = "../../Movie/Log_Luminance/out_2021-07-07_13-13-28.raw"  # ne fonctionne pas avec ~/
 
 # input_filename = "PATH_TO_RAW"
 
@@ -125,6 +125,11 @@ divide_matrix_by = 2
 matrix_level_HQ = Log_Luminance.gen_matrix_PixelState(roi_width, roi_height)
 matrix_level_LQ = Log_Luminance.gen_matrix_PixelState(int(roi_width / divide_matrix_by), int(roi_height / divide_matrix_by))
 
+#Make Video
+make_video_at_the_end = True
+nb_second_de_video = 15
+nom_video = 'ahahah'
+array_img = []
 
 while not controller.is_done():
     controller.run(do_sync)
@@ -134,7 +139,7 @@ while not controller.is_done():
 
     # cette fonction ne marche pas et je ne comprend pas POURQUOI AAAAAAAAHHHHH
     img = Gen_Image.create_image_rgb_from_log_luminance(events_LQ, int(roi_width/2), int(roi_height/2))
-
+    array_img.append(cv2.resize(img, (200, 200)))
     cv2.imshow("Log Luminance", cv2.resize(img, (200, 200)))
     #cv2.imshow("pixelstateHQ", cv2.resize(Gen_Image.create_image_rgb_from_pixel_state(matrix_level_HQ), (400, 400)))
     #cv2.imshow("pixelstateLQ", cv2.resize(Gen_Image.create_image_rgb_from_pixel_state(matrix_level_LQ), (400, 400)))
@@ -142,8 +147,10 @@ while not controller.is_done():
 
     cv2.waitKey(1)  # ne jamais oublié cet ligne de code qui empêche l'image de s'afficher si elle n'est pas la
 
-    last_key = controller.get_last_key_pressed()
-    if last_key == ord('q') or last_key == KeyboardEvent.Symbol.Escape:
+    if nb_second_de_video*28 == len(array_img) and make_video_at_the_end:
         break
 
 cv2.destroyAllWindows()
+
+if make_video_at_the_end:
+    Gen_Image.convert_array_of_image_in_video(array_img, nom_video)

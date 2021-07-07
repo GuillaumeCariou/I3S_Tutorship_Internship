@@ -1,5 +1,6 @@
 import numpy as np
-
+import cv2
+import time
 
 def print_matrix_PixelState(m):
     for i in range(len(m)):
@@ -89,3 +90,14 @@ def create_image_rgb_from_log_luminance(events, width, height):
     # print_matrix(blank_image, "log.txt")
     return blank_image
 
+
+def convert_array_of_image_in_video(array_of_image, output_file_name):
+    size = array_of_image[0].shape
+    size = (size[0], size[1])
+    print(size)
+    fps = 28
+    out = cv2.VideoWriter(output_file_name + '.avi', cv2.VideoWriter_fourcc(*'DIVX'), fps, size )
+    print("==================Write Image to Disk==================")
+    for i in range(len(array_of_image)):
+        out.write(array_of_image[i])
+    out.release()
