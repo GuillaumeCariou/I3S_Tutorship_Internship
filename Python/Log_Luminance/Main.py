@@ -68,8 +68,8 @@ height = geometry.get_height()
 print("Sensor size width = {}   height = {}".format(width, height))
 
 # resize
-roi_width = int(200)
-roi_height = int(200)
+roi_width = int(100)
+roi_height = int(100)
 x0 = int(width / 2 - roi_width / 2)
 y0 = int(height / 2 - roi_height / 2)
 x1 = x0 + roi_width
@@ -117,7 +117,7 @@ i_events_stream.start()
 
 #################################Parameters#################################
 # on part du principe que l'image est carré
-divide_matrix_by = 4
+divide_matrix_by = 2
 print("divide size width = {}   height = {}   Number of pixels = {}".format(int(roi_width/divide_matrix_by), int(roi_height/divide_matrix_by),
                                                                             int(roi_width/divide_matrix_by) * int(roi_height/divide_matrix_by)))
 matrix_level_HQ = Log_Luminance.gen_matrix_PixelState(roi_width, roi_height)
@@ -133,15 +133,21 @@ while not controller.is_done():
     controller.run(do_sync)
 
     events = ev_proc.get_event()  # tableau d'event
-    events_LQ = Log_Luminance.log_luminance(events, matrix_level_HQ, matrix_level_LQ, divide_matrix_by, (width, height), (roi_width, roi_height), treshold=0.2)
+    events_LQ = Log_Luminance.log_luminance(events, matrix_level_HQ, matrix_level_LQ, divide_matrix_by, (width, height),
+                                            (roi_width, roi_height), treshold=1, interpolation=0)
 
     # cette fonction ne marche pas et je ne comprend pas POURQUOI AAAAAAAAHHHHH: elle fonctionne maintenant mais le commentaire me fait sourir
+    img_original = ev_proc.get_cut_event_2d_arrays(x0, x1, y0, y1)
     img = Gen_Image.create_image_rgb_from_log_luminance(events_LQ, int(roi_width/divide_matrix_by), int(roi_height/divide_matrix_by))
-    array_img.append(cv2.resize(img, (200, 200)))
-    cv2.imshow("Log Luminance", cv2.resize(img, (200, 200)))
+    img_original = cv2.resize(img_original, (200, 200))
+    img = cv2.resize(img, (200, 200))
+    cv2.imshow("Original", img_original)
+    cv2.imshow("Log Luminance", img)
     #cv2.imshow("pixelstateHQ", cv2.resize(Gen_Image.create_image_rgb_from_pixel_state(matrix_level_HQ), (400, 400)))
     #cv2.imshow("pixelstateLQ", cv2.resize(Gen_Image.create_image_rgb_from_pixel_state(matrix_level_LQ), (400, 400)))
 
+    if make_video_at_the_end:
+        array_img.append(img)
 
     cv2.waitKey(1)  # ne jamais oublié cet ligne de code qui empêche l'image de s'afficher si elle n'est pas la
 

@@ -31,7 +31,7 @@ def gen_matrix_PixelState(width, height):
 
 
 # event format (x, y, polarity, timestamp)
-def log_luminance(events, matrix_level_HQ, matrix_level_LQ, divide_matrix_by, sensor_size, ROI_size, treshold=1):
+def log_luminance(events, matrix_level_HQ, matrix_level_LQ, divide_matrix_by, sensor_size, ROI_size, treshold=1, interpolation=0):
     events_LQ = []
     if len(events) > 0:
         # lorsque je génére la matrice pixelstate HQ je doit rajouter un valeur corespondant au cordonnées de ce pixel pour le pixel LQ
@@ -47,8 +47,8 @@ def log_luminance(events, matrix_level_HQ, matrix_level_LQ, divide_matrix_by, se
                 matrix_level_HQ[x_matrix_HQ][y_matrix_HQ].level_plus_1()
 
             # calculer niveau du pixel LQ
-            eo_x = x_matrix_HQ % divide_matrix_by
-            eo_y = y_matrix_HQ % divide_matrix_by
+            eo_x = x_matrix_HQ % (divide_matrix_by + interpolation)
+            eo_y = y_matrix_HQ % (divide_matrix_by + interpolation)
             origin_x = x_matrix_HQ
             origin_y = y_matrix_HQ
             if eo_x != 0:
@@ -57,10 +57,13 @@ def log_luminance(events, matrix_level_HQ, matrix_level_LQ, divide_matrix_by, se
                 origin_y -= eo_y
 
             sum_level = 0
-            for i in range(divide_matrix_by):
-                for j in range(divide_matrix_by):
-                    sum_level += matrix_level_HQ[origin_x + i][origin_y + j].get_level()
-            new_level_LQ = sum_level / (divide_matrix_by ** 2)
+            for i in range((divide_matrix_by + interpolation)):
+                for j in range((divide_matrix_by + interpolation)):
+                    if (origin_x + i) >= len(matrix_level_HQ) or (origin_y + j) >= len(matrix_level_HQ):
+                        continue
+                    else:
+                        sum_level += matrix_level_HQ[origin_x + i][origin_y + j].get_level()
+            new_level_LQ = sum_level / ((divide_matrix_by + interpolation) ** 2)  # dois-je rajouter l'interpolation ici ?
 
             # récupérer level LQ aux bonnes coordonnées
             x_matrix_LQ = int(x_matrix_HQ / divide_matrix_by)  # compris entre x_LQ et x_lq + (divide_matrix_by-1)
@@ -94,3 +97,23 @@ def log_luminance(events, matrix_level_HQ, matrix_level_LQ, divide_matrix_by, se
     return events_LQ
     # return un tableau d'event emit avec x_matrix_HQ et y_matrix_HQ compris entre 0 et la taille de matrix level LQ selon largeur ou hauteur
     # je pourrais à partir de ça créer une image à afficher
+
+
+"""
+Version sans interpolation au cas ou
+
+            # calculer niveau du pixel LQ
+            eo_x = x_matrix_HQ % divide_matrix_by
+            eo_y = y_matrix_HQ % divide_matrix_by
+            origin_x = x_matrix_HQ
+            origin_y = y_matrix_HQ
+            if eo_x != 0:
+                origin_x -= eo_x
+            if eo_y != 0:
+                origin_y -= eo_y
+
+            sum_level = 0
+            for i in range((divide_matrix_by + interpolation)):
+                for j in range((divide_matrix_by + interpolation)):
+                    sum_level += matrix_level_HQ[origin_x + i][origin_y + j].get_level()
+            new_level_LQ = sum_level / (divide_matrix_by ** 2)  # dois-je rajouter l'interpolation ici ?"""
