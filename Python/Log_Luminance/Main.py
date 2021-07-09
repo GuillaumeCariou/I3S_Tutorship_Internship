@@ -150,7 +150,7 @@ while not controller.is_done():
     cv2.imshow("Original", img_original)
     cv2.imshow("Log Luminance", img)
 
-    # les deux ligne de code en dessous permettes de visualisé le fonctionnement des matrice de niveau mais consomme beaucoup de ressource
+    # les deux ligne de code en dessous permettes de visualiser le fonctionnement des matrices de niveaux mais consomme beaucoup de ressources
     #cv2.imshow("pixelstateHQ", cv2.resize(Gen_Image.create_image_rgb_from_pixel_state(matrix_level_HQ), (400, 400)))
     #cv2.imshow("pixelstateLQ", cv2.resize(Gen_Image.create_image_rgb_from_pixel_state(matrix_level_LQ), (400, 400)))
 
