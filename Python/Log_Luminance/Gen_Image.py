@@ -85,9 +85,9 @@ def create_image_rgb_from_log_luminance(events, width, height):
     #blank_image[:] = (0, 0, 0)
     for e in events:
         if e[2] == 1:
-            blank_image[e[1]][e[0]] = (255, 255, 255)
+            blank_image[e[1]][e[0]] = (255, 255, 255)  # blanc pour les événement à polarité 1
         else:
-            blank_image[e[1]][e[0]] = (0, 255, 0)
+            blank_image[e[1]][e[0]] = (0, 255, 0)  # vert pour les événement à polarité 0
     # print_matrix(blank_image, "log.txt")
     return blank_image
 

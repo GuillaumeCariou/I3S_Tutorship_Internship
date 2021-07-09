@@ -10,6 +10,7 @@ from Python.Event_Processor.EventProcessor import EventProcessor
 from Python.Log_Luminance import Log_Luminance, Gen_Image
 from metavision_designer_core import RoiFilter
 
+# ce fichier est le ficher d'input raw si on choisis de ne pas utiliser la caméra événementielle
 input_filename = "../../Movie/Log_Luminance/out_2021-07-07_13-13-28.raw"  # ne fonctionne pas avec ~/
 
 cam = input("Do you want to use cam ? Y or N ")
@@ -67,7 +68,7 @@ width = geometry.get_width()
 height = geometry.get_height()
 print("Sensor size width = {}   height = {}".format(width, height))
 
-# resize
+# crop pour la caméra événementielle
 roi_width = int(100)
 roi_height = int(100)
 x0 = int(width / 2 - roi_width / 2)
@@ -117,16 +118,21 @@ i_events_stream.start()
 
 #################################Parameters#################################
 # on part du principe que l'image est carré
-divide_matrix_by = 2
+divide_matrix_by = 2  # de combien on divise la taille de l'image, si on part d'une résolution 100*100 on obtient du 50*50 si divisé par 2
 print("divide size width = {}   height = {}   Number of pixels = {}".format(int(roi_width/divide_matrix_by), int(roi_height/divide_matrix_by),
                                                                             int(roi_width/divide_matrix_by) * int(roi_height/divide_matrix_by)))
-matrix_level_HQ = Log_Luminance.gen_matrix_PixelState(roi_width, roi_height)
-matrix_level_LQ = Log_Luminance.gen_matrix_PixelState(int(roi_width / divide_matrix_by), int(roi_height / divide_matrix_by))
+# les deux matrices de niveaux qui permet de faire fonctionner la log luminance
+# on les garde d'un batch à l'autre ce qui fait que si on a qu'un seul gros batch qui contient tous les événements l'algo fonctionne quand même
+matrix_level_HQ = Log_Luminance.gen_matrix_PixelState(roi_width, roi_height)  # correspond à la haute résolution
+matrix_level_LQ = Log_Luminance.gen_matrix_PixelState(int(roi_width / divide_matrix_by), int(roi_height / divide_matrix_by))  # correspond à la basse résolution
 
 #Make Video
+# si ce paramétre est mis en true, on ajoute les image créer à chaque batch dans un tableau puis on les enregistre sur le disque avec le nom spécifié dans nom_video
+# le nombre de seconde est le nombre de second que la vidéo va duré, j'ai paramétré la video pour qu'elle soit cadancé à 28fps
+# le temps de filmé correspond donc au temps pour acquérir nb_second_de_video*28 images  au total
 make_video_at_the_end = False
 nb_second_de_video = 15
-nom_video = 'ahahah'
+nom_video = 'ahahah'  # juste mettre le nom, le fichier sortira en .avi à la fin du programme
 array_img = []
 
 while not controller.is_done():
@@ -143,6 +149,8 @@ while not controller.is_done():
     img = cv2.resize(img, (200, 200))
     cv2.imshow("Original", img_original)
     cv2.imshow("Log Luminance", img)
+
+    # les deux ligne de code en dessous permettes de visualisé le fonctionnement des matrice de niveau mais consomme beaucoup de ressource
     #cv2.imshow("pixelstateHQ", cv2.resize(Gen_Image.create_image_rgb_from_pixel_state(matrix_level_HQ), (400, 400)))
     #cv2.imshow("pixelstateLQ", cv2.resize(Gen_Image.create_image_rgb_from_pixel_state(matrix_level_LQ), (400, 400)))
 
